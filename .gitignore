@@ -14,8 +14,9 @@ htmlcov/
 .ruff_cache/
 .mypy_cache/
 
-# --- Jupyter ---
+# --- Jupyter y conda ---
 .ipynb_checkpoints/
+condaenv.*.requirements.txt
 
 # --- Sistema operativo y editores ---
 .DS_Store
