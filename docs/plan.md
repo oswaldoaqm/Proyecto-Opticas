@@ -1,7 +1,11 @@
 # Plan de trabajo (tres semanas)
 
-**Entrega:** dentro de tres semanas (fecha exacta por confirmar).  
-**Meta:** rúbrica al 100 % y un trabajo que un investigador revise y encuentre riguroso.
+**Entrega:** sin fecha exacta todavía; planificamos con tres semanas desde el 18 de octubre.  
+**Formato del póster:** los profesores lo confirman la semana del 19 de octubre.  
+**Rúbrica:** no hay una oficial; usamos la matriz de cumplimiento y la rúbrica interna de [`enunciado.md`](enunciado.md).  
+**Meta:** cumplir el enunciado al 100 % y un trabajo que un investigador revise y encuentre riguroso.
+
+**Avance:** de la semana 1 ya están la deducción ([`deduccion.md`](deduccion.md)) y el ejemplo resuelto ([notebook 01](../notebooks/01_ejemplo_resuelto.ipynb)).
 
 ## Hitos
 
@@ -32,5 +36,6 @@
 
 ## Riesgos
 
-- Fecha o formato del póster distintos de lo supuesto → confirmarlos con los profesores en la semana 1.
-- Rúbrica oficial con criterios no listados → cruzarla con [`enunciado.md`](enunciado.md) apenas se tenga.
+- El formato del póster se conoce recién la próxima semana → preparar primero contenido y figuras (vectoriales, en `figuras/`), que sirven para cualquier tamaño.
+- Sin fecha exacta → mantener el calendario de tres semanas; si la fecha llega antes, se recortan extras, no requisitos.
+- Sin rúbrica oficial → la matriz de cumplimiento cubre cada requisito del enunciado y la rúbrica interna, lo demás.
