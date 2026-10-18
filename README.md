@@ -7,6 +7,8 @@ Profesores: Marco Cuyubamba y Eduardo Castillo
 
 ![Trazado vectorial en una lente biconvexa gruesa](figuras/fig00_boceto_trazado.png)
 
+**Simulación interactiva:** <https://oswaldoaqm.github.io/Proyecto-Opticas/> (también en el [notebook 03](notebooks/03_simulacion.ipynb)).
+
 En una lente real (gruesa) cada rayo se refracta dos veces y la ecuación de lente delgada deja de ser exacta. Aquí seguimos cada rayo con vectores: la recta $\mathbf L(\lambda) = \mathbf P_0 + \lambda\hat{\mathbf u}$, su intersección con cada cara curva, la normal local y la **ley de Snell en forma vectorial**. La imagen es el cruce de los rayos emergentes. Así medimos cuánto se aparta una lente real de la predicción paraxial y por qué: por su **espesor** y por la **aberración esférica**.
 
 ## Reproducir todo
@@ -25,6 +27,8 @@ jupyter lab                             # abre los notebooks
 
 Si `conda activate` no funciona en Git Bash, ejecuta una vez `conda init bash` y abre otra terminal (o usa Anaconda Prompt).
 
+La prueba de la página web (`tests/test_web.py`) necesita [Node.js](https://nodejs.org/); si no está instalado, esa prueba se omite. La página se abre sin servidor: `web/index.html`.
+
 <details>
 <summary>Sin conda (venv + pip)</summary>
 
@@ -39,14 +43,16 @@ pip install -e .
 ## Estructura
 
 ```
-├── src/lentes/        núcleo: caras, lente, trazado vectorial, paraxial, gráficos
+├── src/lentes/        núcleo: caras, lente, trazado vectorial, paraxial, aberraciones, simulación
 ├── tests/             pruebas de la física contra resultados conocidos
 ├── scripts/           generar_figuras.py: regenera todas las figuras
-├── notebooks/         exploración y ejemplos (solo importan src/lentes)
+├── notebooks/         ejemplo resuelto, aberraciones y simulación con controles
+├── web/               la simulación como página web (GitHub Pages)
 ├── figuras/           figuras generadas (PNG y SVG); no se editan a mano
 ├── docs/
 │   ├── deduccion.md   la deducción del método vectorial (actividades 1 y 2)
 │   ├── aberraciones.md  paraxial frente a vectorial y aberración esférica (4 y 5)
+│   ├── simulacion.md  la simulación interactiva (actividad 6)
 │   ├── enunciado.md   lo que pide el curso y la matriz de cumplimiento
 │   ├── plan.md        hitos de las tres semanas y extras
 │   ├── bitacora.md    registro de avances
@@ -77,6 +83,7 @@ pip install -e .
 - Deducción del método vectorial: [`docs/deduccion.md`](docs/deduccion.md)
 - Ejemplo resuelto con dos puntos objeto: [`notebooks/01_ejemplo_resuelto.ipynb`](notebooks/01_ejemplo_resuelto.ipynb)
 - Paraxial frente a vectorial y aberración esférica: [`docs/aberraciones.md`](docs/aberraciones.md)
+- Simulación interactiva: [`docs/simulacion.md`](docs/simulacion.md), [página web](https://oswaldoaqm.github.io/Proyecto-Opticas/) y [`notebooks/03_simulacion.ipynb`](notebooks/03_simulacion.ipynb)
 - Qué pide el curso y qué está cubierto: [`docs/enunciado.md`](docs/enunciado.md)
 - Plan y extras: [`docs/plan.md`](docs/plan.md)
 - Avances: [`docs/bitacora.md`](docs/bitacora.md)
