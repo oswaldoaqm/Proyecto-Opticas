@@ -18,7 +18,7 @@ EJE = "#c3c2b7"
 VIDRIO = "#eef3f9"
 
 SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]
-AZUL, NARANJA = SERIES[0], SERIES[1]
+AZUL, NARANJA, AQUA = SERIES[0], SERIES[1], SERIES[2]
 
 # Rampa ordinal (de claro a oscuro); el paso mas claro aun contrasta con el fondo.
 RAMPA_AZUL = ["#86b6ef", "#6da7ec", "#5598e7", "#3987e5", "#2a78d6",
@@ -40,6 +40,7 @@ def aplicar_estilo() -> None:
         "savefig.facecolor": SUPERFICIE,
         "axes.spines.top": False,
         "axes.spines.right": False,
+        "axes.unicode_minus": False,      # signo menos como guion simple "-"
         "svg.hashsalt": "grupo1-optica",  # ids estables en los SVG
     })
 

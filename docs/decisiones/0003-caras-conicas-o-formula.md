@@ -12,7 +12,7 @@ La actividad 3 pide una lente concreta, la 5 pide estudiar la aberración esfér
   Con $k = 0$ es una circunferencia (lente esférica, como las comerciales) y con $k = -1$ una parábola.
 - También cualquier fórmula en $x$, por ejemplo `"1 - x**2/20"`: sympy calcula la derivada exacta, así que la normal no tiene error numérico.
 - El borde de la lente es donde $f(x) = g(x)$, o una semiapertura dada.
-- La intersección rayo–cara se resuelve numéricamente (muestreo + método de Brent), así sirve para cualquier cara. Para la parábola se comprueba contra la fórmula cuadrática exacta (`tests/test_trazado.py`).
+- La intersección rayo-cara se resuelve numéricamente (muestreo + método de Brent), así sirve para cualquier cara. Para la parábola se comprueba contra la fórmula cuadrática exacta (`tests/test_trazado.py`).
 
 ## Consecuencias
 - El ejemplo a mano usa caras parabólicas: la intersección sale de una ecuación cuadrática.
