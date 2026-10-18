@@ -78,6 +78,29 @@ class Lente:
                 f"g={self.abajo.nombre!r}, f={self.arriba.nombre!r})")
 
 
+def lente_con_forma(q: float, focal: float, espesor: float, n: float = 1.5, k: float = 0.0,
+                    semiapertura: float | None = None) -> Lente:
+    """Lente de factor de forma q y distancia focal efectiva dada (con su espesor).
+
+    q = (c1 + c2) / (c1 - c2), con c1 y c2 las curvaturas de vertice de la cara de
+    entrada g y de salida f (decision 0001). q = 0: biconvexa simetrica; q = 1: cara de
+    salida plana (la curva mira hacia la luz); q = -1: cara de entrada plana. Para
+    |q| > 1 la lente es un menisco y hay que dar la semiapertura.
+    """
+    from .paraxial import focal_efectiva  # import local: paraxial importa este modulo
+
+    def armar(t: float, semi: float | None) -> Lente:
+        c1, c2 = t * (1.0 + q), t * (q - 1.0)
+        g = conica(-espesor / 2, np.inf if c1 == 0 else 1.0 / c1, k, nombre="g")
+        f = conica(+espesor / 2, np.inf if c2 == 0 else 1.0 / c2, k, nombre="f")
+        return Lente(abajo=g, arriba=f, n=n, semiapertura=semi)
+
+    # La focal no depende de la apertura: durante la busqueda se usa una apertura minima.
+    t0 = 1.0 / (2.0 * focal * (n - 1.0))  # escala de lente delgada
+    t = brentq(lambda t: focal_efectiva(armar(t, 1e-3)) - focal, t0 / 3.0, 3.0 * t0, xtol=1e-14)
+    return armar(t, semiapertura)
+
+
 def lente_biconvexa(R1: float, R2: float, espesor: float, n: float = 1.5,
                     k1: float = 0.0, k2: float = 0.0, semiapertura: float | None = None) -> Lente:
     """Lente biconvexa centrada en el origen (vertices en y = -espesor/2 y +espesor/2).

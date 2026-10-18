@@ -36,6 +36,12 @@ def focal_efectiva(lente: Lente) -> float:
     return np.inf if C == 0 else -1.0 / C
 
 
+def foco_imagen(lente: Lente) -> float:
+    """Posicion (y) del foco imagen: donde cruzan el eje los rayos que llegan paralelos a el."""
+    A, B, C, D = matriz_sistema(lente).ravel()
+    return np.inf if C == 0 else lente.arriba.y_vertice - A / C
+
+
 @dataclass(frozen=True)
 class ImagenParaxial:
     y: float          # posicion de la imagen sobre el eje
