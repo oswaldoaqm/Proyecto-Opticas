@@ -1,0 +1,12 @@
+# Entorno conda del proyecto. Uso (desde la carpeta del repo):
+#   conda env create -f environment.yml
+#   conda activate optica-grupo1
+name: optica-grupo1
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      - -r requirements.txt
+      - -e .

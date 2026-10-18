@@ -1,0 +1,13 @@
+# Entorno del proyecto: Python 3.12. Versiones fijadas para que todos (y el CI)
+# corran exactamente lo mismo. Instalar con:
+#   pip install -r requirements.txt
+#   pip install -e .
+numpy==2.5.4
+scipy==1.18.1
+matplotlib==3.11.2
+sympy==1.14.0
+ipywidgets==8.1.9
+jupyterlab==4.6.4
+ipykernel==7.4.0
+nbconvert==7.17.2
+pytest==9.1.1
