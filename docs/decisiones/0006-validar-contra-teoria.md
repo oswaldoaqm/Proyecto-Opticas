@@ -12,7 +12,7 @@ Cada pieza del código se compara con un resultado conocido mediante pruebas aut
 | Comprobación | Qué valida |
 |---|---|
 | Interfaz plana: $n_1\sin\theta_i = n_2\sin\theta_t$; incidencia normal sin desvío; reflexión total más allá del ángulo crítico | Snell vectorial |
-| Intersección con una parábola igual a la raíz de la ecuación cuadrática | Intersección rayo–cara |
+| Intersección con una parábola igual a la raíz de la ecuación cuadrática | Intersección rayo-cara |
 | Rayos muy cerca del eje → imagen paraxial de lente gruesa (matrices ABCD) | Trazado completo |
 | Lente muy delgada → ecuación de lente delgada; focal igual a la ecuación del fabricante para lente gruesa | Óptica paraxial |
 | Rayos a $\pm h$ cruzan en el mismo punto | Simetría |
@@ -23,6 +23,10 @@ Cada pieza del código se compara con un resultado conocido mediante pruebas aut
 | Intersección exacta con cónicas igual a la numérica, en cientos de rayos al azar y cinco formas de cara | Las dos maneras de hallar el impacto |
 | Snell con ángulos igual a Snell vectorial; el ejemplo resuelto "a mano" igual al trazador, punto por punto | Todo el recorrido del rayo, con dos implementaciones independientes |
 | Fórmula cuadrática estable frente a la escolar, contra un cálculo con 60 cifras | Pérdida de cifras en rayos casi paralelos al eje |
+| Coeficiente de aberración esférica del trazado igual al de la suma de Seidel, en ocho lentes | Trazado completo frente a teoría de tercer orden |
+| Mejor foco a 2/3 y círculo de mínima confusión a 3/4 entre el foco paraxial y el marginal (pupila pequeña) | Cálculo de la mancha y del mejor foco |
+| Forma óptima de una lente delgada: $q = 2(n^2-1)/(n+2)$ | Lentes de forma y focal dadas |
+| La cónica que anula $S_I$ deja una aberración que crece como $h^4$ | Aporte de las caras cónicas |
 
 ## Consecuencias
 - Si un cambio rompe la física, una prueba falla antes de que el error llegue al póster.
