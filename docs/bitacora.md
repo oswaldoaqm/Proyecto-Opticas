@@ -2,6 +2,14 @@
 
 Registro corto de avances, del más reciente al más antiguo.
 
+## 2026-10-18 (tarde)
+- Deducción completa del procedimiento vectorial ([`deduccion.md`](deduccion.md)): rayo paramétrico; intersección cuadrática (con la fórmula estable), cónica y numérica; tangente y normal; regla del sentido de la normal; Snell vectorial deducido desde la conservación de la componente tangencial; reflexión total; imagen por la regla de Cramer.
+- Ejemplo resuelto ([notebook 01](../notebooks/01_ejemplo_resuelto.ipynb)) con $P_1 = (0, -30)$ y $P_2 = (-1, -30)$ y cuatro rayos, calculado con un método independiente (cuadrática + Snell con ángulos). Imagen de $P_1$ en $y = 16.029$ (paraxial: $16.187$) e imagen de $P_2$ en $(0.530,\ 15.987)$ (paraxial: $(0.535,\ 16.187)$). Coincide con el trazador vectorial hasta $2\times10^{-16}$.
+- En el paquete: intersección exacta para caras cónicas y el módulo `lentes.a_mano`. 79 pruebas.
+- fig01: construcción vectorial en cada cara (tangente, normal del enunciado, normal usada y ángulos).
+- Se corrigió la decisión 0002: la normal del enunciado falla en las dos caras, no en una.
+- No hay fecha exacta ni rúbrica oficial; el formato del póster se confirma la próxima semana.
+
 ## 2026-10-18
 - Estructura del repositorio, entorno fijado (Python 3.12) y CI en Linux y Windows.
 - Núcleo de trazado vectorial (`src/lentes`): caras cónicas o por fórmula, Snell vectorial con reflexión total, trazado completo, imagen por cruce de rayos, predicción paraxial (matrices ABCD) y de lente delgada.
