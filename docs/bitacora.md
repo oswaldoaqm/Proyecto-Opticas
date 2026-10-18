@@ -2,6 +2,12 @@
 
 Registro corto de avances, del más reciente al más antiguo.
 
+## 2026-10-18 (simulación)
+- Simulación interactiva (actividad 6): página web en `web/` para el celular y [notebook 03](../notebooks/03_simulacion.ipynb) con controles. Se varían $P$, $n_L$, las caras (cónicas o fórmulas) y los ángulos de los rayos. Muestra rayos incidentes, transmitidos y emergentes, la imagen de dos rayos, la paraxial, los focos y avisos de reflexión total ([`simulacion.md`](simulacion.md)).
+- La página usa el trazador traducido a JavaScript; `tests/test_web.py` lo compara con Python en 10 casos, con diferencias menores que $10^{-9}$ ([decisión 0007](decisiones/0007-simulacion-web-en-javascript.md)).
+- `lentes.simulacion` arma la escena del notebook; sus pruebas la comparan con el método a mano. 117 pruebas en total.
+- fig05: código QR de la página para el póster, comprobado con un lector de QR. La publicación en GitHub Pages queda en `.github/workflows/pages.yml`.
+
 ## 2026-10-18 (noche)
 - Actividades 4 y 5 ([`aberraciones.md`](aberraciones.md), [notebook 02](../notebooks/02_aberraciones.ipynb), fig02 a fig04).
 - La paraxial y el trazado difieren en 1 % con $h = 1.03$ (caras parabólicas) y $h = 0.78$ (esféricas). La ecuación de lente delgada tiene 7.3 % de error con $d = 2$.
