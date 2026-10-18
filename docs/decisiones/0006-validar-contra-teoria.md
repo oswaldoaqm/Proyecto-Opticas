@@ -27,6 +27,8 @@ Cada pieza del código se compara con un resultado conocido mediante pruebas aut
 | Mejor foco a 2/3 y círculo de mínima confusión a 3/4 entre el foco paraxial y el marginal (pupila pequeña) | Cálculo de la mancha y del mejor foco |
 | Forma óptima de una lente delgada: $q = 2(n^2-1)/(n+2)$ | Lentes de forma y focal dadas |
 | La cónica que anula $S_I$ deja una aberración que crece como $h^4$ | Aporte de las caras cónicas |
+| La página web traza los mismos rayos que el paquete Python, punto por punto, en 10 casos | La simulación en JavaScript ([decisión 0007](0007-simulacion-web-en-javascript.md)) |
+| La escena del notebook 03 da la misma imagen que el método a mano | La simulación en Python |
 
 ## Consecuencias
 - Si un cambio rompe la física, una prueba falla antes de que el error llegue al póster.
