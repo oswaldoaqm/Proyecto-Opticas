@@ -18,15 +18,15 @@ Cada fila es un requisito del enunciado. Se actualiza con cada avance. No hay r�
 | A1 | Modelar cada rayo con la recta paramétrica $\mathbf L(\lambda) = \mathbf P_0 + \lambda\hat{\mathbf u}$ e indicar cómo se halla su intersección con $y = f(x)$ o $y = g(x)$ | [Deducción](deduccion.md), secciones 2 y 3 · `interseccion`, `interseccion_exacta` · pruebas en `tests/test_exacta.py` | listo |
 | A2 | Construir $\hat t$ y $\hat n$ para $y = f(x)$ y explicar cómo elegir el sentido correcto de la normal en cada refracción | [Deducción](deduccion.md), secciones 4 a 6 · fig01 · [decisión 0002](decisiones/0002-normal-y-snell-vectorial.md) · `refractar` | listo |
 | A3 | Aplicar el procedimiento a una biconvexa ($f$ y $g$ de concavidad contraria, $n_L = 1.5$): para un punto objeto, trazar al menos dos rayos, sus dos refracciones y la posición de la imagen | [Notebook 01](../notebooks/01_ejemplo_resuelto.ipynb): cuatro rayos con todos los pasos, imagen de cada punto objeto, verificado contra el trazador | listo |
-| A4 | Comparar con la aproximación paraxial: en qué condiciones coinciden y cuándo aparecen diferencias apreciables | `lentes.paraxial` · fig00 y notebook 01 (comparación puntual) · discusión: pendiente | en progreso |
-| A5 | Analizar cómo cambia la imagen cuando los rayos incidentes se alejan del eje y relacionarlo con la aberración esférica | fig00, panel (b) (boceto) · análisis final: pendiente | en progreso |
+| A4 | Comparar con la aproximación paraxial: en qué condiciones coinciden y cuándo aparecen diferencias apreciables | [Análisis](aberraciones.md), sección 2 · fig02 · [notebook 02](../notebooks/02_aberraciones.ipynb) | listo |
+| A5 | Analizar cómo cambia la imagen cuando los rayos incidentes se alejan del eje y relacionarlo con la aberración esférica | [Análisis](aberraciones.md), sección 3 · fig03 · teoría de Seidel en `lentes.seidel` | listo |
 | A6 | Simulación (Python, MATLAB u otro) del trazado vectorial que permita variar $P$, $n_L$, $f(x)$, $g(x)$ y $\hat u_i$, y muestre rayos incidentes, transmitidos y emergentes y la posición de la imagen | Núcleo listo (`src/lentes`) · interfaz interactiva: pendiente | en progreso |
 | E1 | Póster académico | `poster/` · formato por confirmar | pendiente |
 | E2 | Deducción del procedimiento vectorial | [docs/deduccion.md](deduccion.md) y fig01 · falta llevarla al póster | listo |
-| E3 | Simulación funcional | — | pendiente |
+| E3 | Simulación funcional | - | pendiente |
 | E4 | Trazado de rayos para al menos dos puntos objeto | Notebook 01: $P_1 = (0, -30)$ en el eje y $P_2 = (-1, -30)$ fuera del eje | listo |
-| E5 | Comparación con la aproximación paraxial | fig00 (boceto) y notebook 01 · gráficas finales: pendiente | en progreso |
-| E6 | Discusión física de las aberraciones observadas | — | pendiente |
+| E5 | Comparación con la aproximación paraxial | fig02 y [análisis](aberraciones.md), sección 2 | listo |
+| E6 | Discusión física de las aberraciones observadas | fig03, fig04 y [análisis](aberraciones.md), secciones 3 y 4 · falta llevarla al póster | listo |
 
 ## Rúbrica interna
 
