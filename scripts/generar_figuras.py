@@ -20,16 +20,27 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 from matplotlib.patches import Arc  # noqa: E402
+from matplotlib.ticker import FuncFormatter  # noqa: E402
+from scipy.optimize import minimize_scalar  # noqa: E402
 
 from lentes import (  # noqa: E402
     cruce_con_eje,
     imagen_lente_delgada,
     imagen_paraxial,
     lente_biconvexa,
+    lente_con_forma,
     rayo_hacia,
     trazar,
 )
+from lentes.aberraciones import (  # noqa: E402
+    abanico,
+    aberracion_longitudinal,
+    coeficiente_esferica_trazado,
+    mejores_focos,
+    y_paraxial,
+)
 from lentes.estilo import (  # noqa: E402
+    AQUA,
     AZUL,
     EJE,
     NARANJA,
@@ -44,6 +55,7 @@ from lentes.estilo import (  # noqa: E402
     guardar_figura,
 )
 from lentes.graficos import dibujar_lente, dibujar_trayectoria  # noqa: E402
+from lentes.seidel import coeficiente_esferica, k_que_anula  # noqa: E402
 
 RAIZ = Path(__file__).resolve().parents[1]
 CARPETA = RAIZ / "figuras"
@@ -151,13 +163,13 @@ def boceto_trazado():
                      ha="left", va="center", color=TINTA_2, fontsize=8.5)
     axb.set_xlim(-0.1, 4.75)
     axb.set_xlabel("altura h a la que el rayo entra en la lente")
-    axb.set_ylabel("Δy = cruce con el eje − imagen paraxial")
+    axb.set_ylabel("Δy = cruce con el eje - imagen paraxial")
     axb.set_title("(b) Aberración esférica: cuanto más lejos del eje, antes enfoca el rayo",
                   loc="left", fontsize=10)
     axb.grid(True, color=REJILLA, lw=0.6)
     axb.legend(frameon=False, loc="lower left", fontsize=8.5, labelcolor=TINTA_2)
 
-    fig.suptitle("Boceto del Grupo 1 — trazado vectorial en una lente biconvexa gruesa "
+    fig.suptitle("Boceto del Grupo 1 - trazado vectorial en una lente biconvexa gruesa "
                  f"(R = {R:g}, espesor = {espesor:g}, objeto en y = {yP:g})",
                  x=0.06, ha="left", fontsize=11.5, color=TINTA, y=0.995)
     return fig
@@ -256,9 +268,241 @@ def geometria_refraccion():
 
     fig.suptitle("Refracción vectorial: en cada cara se usa la normal que mira hacia el medio de donde llega la luz",
                  x=0.03, ha="left", fontsize=11, color=TINTA, y=0.99)
-    fig.text(0.03, 0.02, "Rayo de P = (0, −30) que entra a la altura x = 3 en una lente de caras parabólicas "
+    fig.text(0.03, 0.02, "Rayo de P = (0, -30) que entra a la altura x = 3 en una lente de caras parabólicas "
              "(R = 10, espesor 2). Vista girada: la luz avanza de izquierda a derecha.",
              ha="left", fontsize=8.5, color=TINTA_2)
+    return fig
+
+
+def _umbrales(ax, x_texto):
+    """Lineas de referencia en 1 % y 0.1 %."""
+    for nivel, texto in ((1.0, "1 %"), (0.1, "0.1 %")):
+        ax.axhline(nivel, color=TENUE, lw=0.8, ls=(0, (4, 3)), zorder=1)
+        ax.text(x_texto, nivel * 1.12, texto, color=TENUE, fontsize=8, ha="right", va="bottom")
+
+
+def _guia_pendiente(ax, x0, x1, y0, potencia, texto):
+    """Recta de referencia y = y0 (x / x0)^potencia en escala log-log."""
+    xs = np.array([x0, x1])
+    ax.loglog(xs, y0 * (xs / x0) ** potencia, color=TENUE, lw=1.0, ls=(0, (1, 2)), zorder=2)
+    ax.text(np.sqrt(x0 * x1), y0 * (np.sqrt(x1 / x0)) ** potencia * 0.55, texto, color=TENUE,
+            fontsize=8.5, ha="left", va="top")
+
+
+def _cruce_log(x, y, nivel):
+    """x donde la curva creciente y(x) alcanza el nivel (interpolando en escala log)."""
+    return float(np.exp(np.interp(np.log(nivel), np.log(y), np.log(x))))
+
+
+@figura("fig02_cuando_vale_paraxial")
+def cuando_vale_paraxial():
+    """Actividad 4: la diferencia con la paraxial crece como h^2 (apertura) y el error de la
+    ecuacion de lente delgada como d (espesor)."""
+    y_obj = -30.0
+    casos = (("caras parabólicas", lente_biconvexa(10, 10, 2.0, 1.5, -1.0, -1.0), AZUL),
+             ("caras esféricas", lente_biconvexa(10, 10, 2.0, 1.5, 0.0, 0.0), NARANJA))
+    h_max = 0.9 * min(L.semiapertura for _, L, _ in casos)
+    hs = np.geomspace(0.05, h_max, 70)
+
+    fig, (axa, axb) = plt.subplots(1, 2, figsize=(11, 4.8))
+    fig.subplots_adjust(left=0.07, right=0.98, top=0.83, bottom=0.21, wspace=0.27)
+
+    # (a) apertura
+    for (nombre, L, color), (dx, dy, ha, va) in zip(casos, ((8, -6, "left", "top"), (-8, 6, "right", "bottom"))):
+        rel = 100 * np.abs(aberracion_longitudinal(L, y_obj, hs)) / y_paraxial(L, y_obj)
+        axa.loglog(hs, rel, color=color, lw=2, label=nombre, zorder=3)
+        h1 = _cruce_log(hs, rel, 1.0)
+        axa.plot(h1, 1.0, "o", color=color, ms=6, zorder=4)
+        axa.annotate(f"h = {h1:.2f}", (h1, 1.0), xytext=(dx, dy), textcoords="offset points",
+                     ha=ha, va=va, color=TINTA_2, fontsize=8.5)
+    _umbrales(axa, hs[-1])
+    _guia_pendiente(axa, 0.06, 0.6, 3e-4, 2, "pendiente 2: ∝ h²")
+    axa.set_xlabel("altura h a la que el rayo entra en la lente")
+    axa.set_ylabel("diferencia con la paraxial\n(% de la distancia imagen)")
+    axa.set_title("(a) Apertura: la diferencia crece como h²", loc="left", fontsize=10)
+    axa.legend(frameon=False, loc="upper left", fontsize=8.5, labelcolor=TINTA_2)
+
+    # (b) espesor
+    ds = np.geomspace(0.01, 4.0, 60)
+    error = []
+    for d in ds:
+        L = lente_biconvexa(10, 10, d, 1.5)
+        gruesa = imagen_paraxial(L, (0.0, y_obj)).y
+        delgada = imagen_lente_delgada(L, (0.0, y_obj)).y
+        error.append(100 * abs(delgada - gruesa) / gruesa)
+    error = np.array(error)
+    axb.loglog(ds, error, color=TINTA_2, lw=2, zorder=3)
+    d1 = _cruce_log(ds, error, 1.0)
+    e2 = float(np.exp(np.interp(np.log(2.0), np.log(ds), np.log(error))))
+    axb.plot([d1, 2.0], [1.0, e2], "o", color=TINTA_2, ms=6, zorder=4)
+    axb.annotate(f"d = {d1:.2f}", (d1, 1.0), xytext=(-7, 7), textcoords="offset points",
+                 ha="right", color=TINTA_2, fontsize=8.5)
+    axb.annotate(f"nuestra lente: d = 2, error {e2:.1f} %", (2.0, e2), xytext=(-8, 6),
+                 textcoords="offset points", ha="right", color=TINTA_2, fontsize=8.5)
+    _umbrales(axb, ds[-1])
+    _guia_pendiente(axb, 0.012, 0.12, 0.012, 1, "pendiente 1: ∝ d")
+    axb.set_xlabel("espesor d de la lente (radios R = 10)")
+    axb.set_ylabel("error de la ecuación de lente delgada\n(% de la distancia imagen)")
+    axb.set_title("(b) Espesor: el error de lente delgada crece como d", loc="left", fontsize=10)
+
+    decimal = FuncFormatter(lambda v, _: f"{v:g}")
+    for ax in (axa, axb):
+        ax.xaxis.set_major_formatter(decimal)
+        ax.yaxis.set_major_formatter(decimal)
+
+    fig.suptitle("¿Cuándo coinciden el trazado vectorial y la aproximación paraxial?",
+                 x=0.03, ha="left", fontsize=11.5, color=TINTA, y=0.98)
+    fig.text(0.03, 0.03, "Lente biconvexa con R = 10 y n = 1.5; objeto sobre el eje a 30 unidades del centro. "
+             "En (a) el espesor es 2; en (b) se comparan dos predicciones paraxiales.",
+             ha="left", fontsize=8.5, color=TINTA_2)
+    return fig
+
+
+@figura("fig03_aberracion_esferica")
+def aberracion_esferica():
+    """Actividad 5: aberracion longitudinal (trazado y Seidel), transversal y la caustica."""
+    y_obj = -30.0
+    parab = lente_biconvexa(10, 10, 2.0, 1.5, -1.0, -1.0)
+    esfer = lente_biconvexa(10, 10, 2.0, 1.5, 0.0, 0.0)
+    h_max = 0.9 * min(parab.semiapertura, esfer.semiapertura)
+    hs = np.linspace(0.02, h_max, 90)
+
+    fig = plt.figure(figsize=(11, 8.6))
+    gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 0.9], hspace=0.45, wspace=0.26,
+                          left=0.07, right=0.98, top=0.91, bottom=0.095)
+    axa, axb, axc = fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1]), fig.add_subplot(gs[1, :])
+
+    # (a) longitudinal: trazado exacto frente a tercer orden
+    axa.axhline(0, color=EJE, lw=0.8, zorder=1)
+    for nombre, L, color in (("parabólicas", parab, AZUL), ("esféricas", esfer, NARANJA)):
+        axa.plot(hs, aberracion_longitudinal(L, y_obj, hs), color=color, lw=2.2, zorder=3,
+                 label=f"caras {nombre}: trazado exacto")
+        axa.plot(hs, coeficiente_esferica(L, y_obj) * hs**2, color=color, lw=1.2, ls=(0, (4, 3)), zorder=3,
+                 label=f"caras {nombre}: tercer orden (Seidel)")
+    axa.set_xlabel("altura h a la que el rayo entra en la lente")
+    axa.set_ylabel("Δy = cruce con el eje - imagen paraxial")
+    axa.set_title("(a) Trazado exacto y teoría de tercer orden", loc="left", fontsize=10)
+    axa.grid(True, color=REJILLA, lw=0.6)
+    axa.legend(frameon=False, loc="lower left", fontsize=8, labelcolor=TINTA_2)
+
+    # (b) aberracion transversal de la lente parabolica
+    focos = mejores_focos(parab, y_obj, h_max)
+    hh = np.linspace(-h_max, h_max, 181)
+    ab = abanico(parab, y_obj, hh)
+    axb.axhline(0, color=EJE, lw=0.8, zorder=1)
+    axb.axvline(0, color=EJE, lw=0.8, zorder=1)
+    axb.plot(hh, ab.x_en(focos.y_paraxial), color=AZUL, lw=1.4, ls=(0, (4, 3)), zorder=3,
+             label=f"en el plano paraxial (y = {focos.y_paraxial:.2f})")
+    axb.plot(hh, ab.x_en(focos.y_rms), color=AZUL, lw=2.2, zorder=3,
+             label=f"en el plano de mejor foco (y = {focos.y_rms:.2f})")
+    axb.set_xlabel("altura h a la que el rayo entra en la lente")
+    axb.set_ylabel("altura x al llegar al plano")
+    axb.set_title("(b) Aberración transversal (caras parabólicas)", loc="left", fontsize=10)
+    axb.grid(True, color=REJILLA, lw=0.6)
+    axb.legend(frameon=False, loc="upper right", fontsize=8, labelcolor=TINTA_2)
+
+    # (c) caustica cerca del foco, vista girada
+    a_fan = h_max
+    y_fin = focos.y_paraxial + 1.0
+    for h in np.linspace(-a_fan, a_fan, 41):
+        tr = trazar(parab, *_rayo_eje(parab, y_obj, h))
+        if tr.estado == "ok":
+            dibujar_trayectoria(axc, tr, y_final=y_fin, color=color_por_altura(h, a_fan), lw=0.8)
+    axc.axhline(0, color=EJE, lw=0.8, zorder=0)
+    caja = dict(boxstyle="round,pad=0.18", fc=SUPERFICIE, ec="none", alpha=0.92)
+    axc.plot(focos.y_paraxial, 0, "o", mfc=SUPERFICIE, mec=TINTA, ms=7, mew=1.4, zorder=6)
+    axc.plot(focos.y_marginal, 0, "o", color=TINTA, ms=5.5, zorder=6)
+    axc.plot(focos.y_rms, 0, "D", color=TINTA, ms=5.5, zorder=6)
+    axc.plot([focos.y_circulo] * 2, [-focos.radio_circulo, focos.radio_circulo], color=TINTA, lw=2.2,
+             solid_capstyle="butt", zorder=6)
+    for y, x, texto, dy in ((focos.y_paraxial, 0, "foco paraxial", 16),
+                            (focos.y_marginal, 0, "foco del rayo\nmás alejado", 16),
+                            (focos.y_rms, 0, f"mejor foco\n(radio RMS {focos.rms:.2f})", -38),
+                            (focos.y_circulo, focos.radio_circulo,
+                             f"círculo de mínima confusión\n(radio {focos.radio_circulo:.2f})", 12)):
+        axc.annotate(texto, (y, x), xytext=(0, dy), textcoords="offset points", ha="center",
+                     color=TINTA, fontsize=8.5, bbox=caja, zorder=7)
+    axc.set_xlim(focos.y_marginal - 0.7, focos.y_paraxial + 0.9)
+    axc.set_ylim(-0.6, 0.6)
+    axc.set_aspect("equal")
+    axc.set_xlabel("y  (eje óptico; la luz avanza en +y)")
+    axc.set_ylabel("x")
+    axc.set_title("(c) Cáustica cerca del foco (caras parabólicas): la mancha más chica no está en el foco paraxial",
+                  loc="left", fontsize=10)
+
+    fig.suptitle("Aberración esférica: los rayos que entran lejos del eje enfocan antes",
+                 x=0.03, ha="left", fontsize=11.5, color=TINTA, y=0.985)
+    fig.text(0.03, 0.015, "Lente biconvexa con R = 10, espesor 2 y n = 1.5; objeto sobre el eje en y = -30. "
+             "El radio RMS supone una pupila circular de radio 3.92.", ha="left", fontsize=8.5, color=TINTA_2)
+    return fig
+
+
+def _rayo_eje(lente, y_obj, h):
+    P = np.array([0.0, y_obj])
+    return P, rayo_hacia(lente, P, h)
+
+
+@figura("fig04_forma_y_asfericas")
+def forma_y_asfericas():
+    """Extras: forma optima de la lente (bending) y caras conicas que anulan el tercer orden."""
+    fig, (axa, axb) = plt.subplots(1, 2, figsize=(11, 4.9))
+    fig.subplots_adjust(left=0.07, right=0.98, top=0.82, bottom=0.2, wspace=0.32)
+
+    # (a) forma de la lente, misma focal, objeto en el infinito
+    qs = np.linspace(-1.0, 1.0, 161)
+    curvas = {}
+    for d in (2.0, 1e-4):
+        curvas[d] = np.array([abs(coeficiente_esferica(lente_con_forma(q, 10.0, d), None)) for q in qs])
+    optimos = {d: minimize_scalar(lambda q: abs(coeficiente_esferica(lente_con_forma(q, 10.0, d), None)),
+                                  bounds=(0.2, 0.95), method="bounded", options={"xatol": 1e-6}).x
+               for d in (2.0, 1e-4)}
+    axa.plot(qs, curvas[1e-4], color=TENUE, lw=1.3, ls=(0, (4, 3)), label="lente delgada (teoría)", zorder=2)
+    axa.plot(qs, curvas[2.0], color=TINTA_2, lw=2.2, label="nuestra lente, d = 2 (teoría de tercer orden)", zorder=3)
+    q_puntos = np.array([-1.0, -0.5, 0.0, 0.5, optimos[2.0], 1.0])
+    medidos = [abs(coeficiente_esferica_trazado(lente_con_forma(q, 10.0, 2.0), None)) for q in q_puntos]
+    axa.plot(q_puntos, medidos, "o", color=TINTA, ms=6, label="trazado exacto", zorder=4)
+    tope = curvas[2.0].max()
+    for d in (2.0, 1e-4):
+        axa.axvline(optimos[d], color=TENUE, lw=0.8, ls=(0, (1, 2)), zorder=1)
+    axa.annotate(f"óptimo con d = 2: q = {optimos[2.0]:.2f}", (optimos[2.0], 0.79 * tope), xytext=(-6, 0),
+                 textcoords="offset points", ha="right", color=TINTA_2, fontsize=8.5)
+    axa.annotate(f"óptimo de lente delgada: q = {optimos[1e-4]:.3f}", (optimos[2.0], 0.71 * tope),
+                 xytext=(-6, 0), textcoords="offset points", ha="right", color=TENUE, fontsize=8.5)
+    for q, texto in ((-1.0, "cara plana\nhacia la luz"), (0.0, "simétrica"), (1.0, "cara curva\nhacia la luz")):
+        axa.annotate(texto, (q, 0), xytext=(0, -30), textcoords="offset points", ha="center", va="top",
+                     color=TINTA_2, fontsize=8, annotation_clip=False)
+    axa.set_ylim(0, tope * 1.08)
+    axa.set_xlabel("factor de forma q", labelpad=30)
+    axa.set_ylabel("|Δy| de un rayo que entra a h = 1")
+    axa.set_title("(a) Forma de la lente con la misma focal (f = 10, objeto lejano)", loc="left", fontsize=10)
+    axa.grid(True, color=REJILLA, lw=0.6)
+    axa.legend(frameon=False, loc="upper right", fontsize=8, labelcolor=TINTA_2)
+
+    # (b) forma de las caras: esfera, parabola y la conica que anula el tercer orden
+    y_obj = -30.0
+    k_cero = k_que_anula(lente_biconvexa(10, 10, 2.0, 1.5, 0.0, 0.0), y_obj)
+    casos = (("esfera (k = 0)", 0.0, NARANJA), ("parábola (k = -1)", -1.0, AZUL),
+             (f"cónica que anula el tercer orden (k = {k_cero:.2f})", k_cero, AQUA))
+    lentes_k = [(nombre, lente_biconvexa(10, 10, 2.0, 1.5, k, k), color) for nombre, k, color in casos]
+    h_max = 0.9 * min(L.semiapertura for _, L, _ in lentes_k)
+    hs = np.linspace(0.02, h_max, 90)
+    axb.axhline(0, color=EJE, lw=0.8, zorder=1)
+    finales = {}
+    for nombre, L, color in lentes_k:
+        dy = aberracion_longitudinal(L, y_obj, hs)
+        finales[nombre] = dy[-1]
+        axb.plot(hs, dy, color=color, lw=2.2, label=nombre, zorder=3)
+    d_esf, d_k = finales[casos[0][0]], finales[casos[2][0]]
+    axb.text(0.1, -1.9, f"Con la cónica adecuada, a h = {hs[-1]:.1f}:\nΔy = {d_k:.3f}, "
+             f"{d_esf / d_k:.0f} veces menos que la esfera", ha="left", va="top", color=TINTA_2, fontsize=8.5)
+    axb.set_xlabel("altura h a la que el rayo entra en la lente")
+    axb.set_ylabel("Δy (cruce con el eje - paraxial)")
+    axb.set_title("(b) Forma de las caras (lente simétrica, objeto en y = -30)", loc="left", fontsize=10)
+    axb.grid(True, color=REJILLA, lw=0.6)
+    axb.legend(frameon=False, loc="lower left", fontsize=8, labelcolor=TINTA_2)
+
+    fig.suptitle("Cómo se reduce la aberración esférica: forma de la lente y caras asféricas",
+                 x=0.03, ha="left", fontsize=11.5, color=TINTA, y=0.98)
     return fig
 
 
