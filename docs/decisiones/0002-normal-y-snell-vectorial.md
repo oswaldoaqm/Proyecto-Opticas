@@ -4,7 +4,7 @@
 - **Estado:** aceptada
 
 ## Contexto
-$\hat n = (-s', 1)/\sqrt{1+s'^2}$ siempre apunta hacia $+y$. En la cara $g$ (la primera) apunta hacia dentro del vidrio y en la cara $f$ (la segunda) hacia fuera. Si se usa tal cual en las dos refracciones, en una de ellas los signos salen mal. La actividad 2 pide justamente explicar cómo elegir el sentido correcto.
+$\hat n = (-s', 1)/\sqrt{1+s'^2}$ siempre apunta hacia $+y$: en la cara $g$ (la primera) apunta hacia dentro del vidrio y en la cara $f$ (la segunda) hacia fuera. La fórmula de Snell vectorial supone una normal que mira hacia el medio de donde viene la luz ($\hat n\cdot\hat u < 0$). Como en nuestra lente la luz viaja en $+y$, la $\hat n$ del enunciado incumple esa condición en **las dos** caras; y si se fijara la normal "hacia fuera del vidrio", fallaría solo en la segunda. Hace falta una regla que no dependa de la cara. La actividad 2 pide justamente explicar cómo elegir el sentido correcto.
 
 ## Decisión
 En cada refracción se usa la normal que mira **hacia el medio de donde viene la luz**: si $\hat n\cdot\hat u > 0$, se cambia $\hat n \to -\hat n$. Así $\cos\theta_i = -\hat n\cdot\hat u > 0$ siempre y la ley de Snell vectorial es la misma en las dos caras:
@@ -22,3 +22,6 @@ Al cruzar la interfaz se conserva la componente tangencial de $n\,\hat u$: $n_1(
 
 ## Alternativas consideradas
 - Fijar la normal "hacia afuera del vidrio" en ambas caras y cambiar el signo de la fórmula según el rayo entre o salga: funciona, pero obliga a distinguir casos y es fácil equivocarse.
+
+## Historial
+- 2026-10-18: se corrigió el contexto. La primera versión decía que, usada tal cual, la normal del enunciado fallaba en una sola cara; con la luz en $+y$ falla en las dos. La deducción completa está en [`docs/deduccion.md`](../deduccion.md), sección 5.

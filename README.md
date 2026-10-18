@@ -45,6 +45,7 @@ pip install -e .
 ├── notebooks/         exploración y ejemplos (solo importan src/lentes)
 ├── figuras/           figuras generadas (PNG y SVG); no se editan a mano
 ├── docs/
+│   ├── deduccion.md   la deducción del método vectorial (actividades 1 y 2)
 │   ├── enunciado.md   lo que pide el curso y la matriz de cumplimiento
 │   ├── plan.md        hitos de las tres semanas y extras
 │   ├── bitacora.md    registro de avances
@@ -72,6 +73,8 @@ pip install -e .
 
 ## Estado
 
+- Deducción del método vectorial: [`docs/deduccion.md`](docs/deduccion.md)
+- Ejemplo resuelto con dos puntos objeto: [`notebooks/01_ejemplo_resuelto.ipynb`](notebooks/01_ejemplo_resuelto.ipynb)
 - Qué pide el curso y qué está cubierto: [`docs/enunciado.md`](docs/enunciado.md)
 - Plan y extras: [`docs/plan.md`](docs/plan.md)
 - Avances: [`docs/bitacora.md`](docs/bitacora.md)

@@ -123,6 +123,64 @@ def interseccion(P, u, sup: Superficie, semiapertura: float, lam_min: float, lam
     return None
 
 
+def raices_cuadratica(A: float, B: float, C: float) -> list[float]:
+    """Raices reales de A x^2 + B x + C = 0, ordenadas, con la formula estable.
+
+        q = -(B + sgn(B) sqrt(B^2 - 4AC)) / 2,   x1 = q / A,   x2 = C / q
+
+    Evita restar numeros casi iguales (perdida de cifras) cuando |4AC| << B^2,
+    que es lo que ocurre con rayos casi paralelos al eje. Si A = 0 devuelve la
+    solucion lineal x = -C / B.
+    """
+    if A == 0.0:
+        return [] if B == 0.0 else [-C / B]
+    disc = B * B - 4.0 * A * C
+    if disc < 0.0:
+        return []
+    q = -0.5 * (B + float(np.copysign(np.sqrt(disc), B)))
+    if q == 0.0:
+        return [0.0]
+    return sorted([q / A, C / q])
+
+
+def interseccion_exacta(P, u, sup: Superficie, semiapertura: float) -> float | None:
+    """Interseccion rayo-cara en forma cerrada, para caras conicas (sup.k conocido).
+
+    La conica con vertice (0, y_v) y radio de vertice R cumple
+        x^2 - 2 R z + (1 + k) z^2 = 0,   con z = y - y_v.
+    Al sustituir x = x0 + lam ux, z = z0 + lam uy queda A lam^2 + B lam + C = 0:
+        A = ux^2 + (1 + k) uy^2
+        B = 2 [x0 ux - R uy + (1 + k) z0 uy]
+        C = x0^2 - 2 R z0 + (1 + k) z0^2
+    Se devuelve la menor raiz positiva que cae sobre la cara: dentro de la
+    semiapertura y en la rama del vertice (y = s(x)). Cara plana: lam = -z0 / uy.
+    """
+    if sup.k is None:
+        raise ValueError("la interseccion exacta solo existe para caras conicas")
+    P = np.asarray(P, dtype=float)
+    u = np.asarray(u, dtype=float)
+    x0, z0 = float(P[0]), float(P[1] - sup.y_vertice)
+    R, k = sup.radio_vertice, sup.k
+    if np.isinf(R):
+        raices = [] if u[1] == 0 else [-z0 / u[1]]
+    else:
+        A = u[0] ** 2 + (1.0 + k) * u[1] ** 2
+        B = 2.0 * (x0 * u[0] - R * u[1] + (1.0 + k) * z0 * u[1])
+        C = x0**2 - 2.0 * R * z0 + (1.0 + k) * z0**2
+        raices = raices_cuadratica(A, B, C)
+    for lam in raices:
+        if lam <= EPS:
+            continue
+        x = x0 + lam * u[0]
+        y = P[1] + lam * u[1]
+        if abs(x) > semiapertura * (1.0 + 1e-12):
+            continue
+        s = float(sup(x))
+        if np.isfinite(s) and abs(y - s) <= 1e-9 * (1.0 + abs(y)):
+            return float(lam)
+    return None
+
+
 def _primer_impacto(lente: Lente, P, u) -> tuple[float, Superficie] | None:
     """Primera cara que encuentra el rayo (dentro de la apertura), o None."""
     pad = 1e-9 + 1e-6 * (lente.y_max - lente.y_min)

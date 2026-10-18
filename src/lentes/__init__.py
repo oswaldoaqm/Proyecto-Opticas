@@ -1,7 +1,8 @@
 """lentes: trazado vectorial de rayos en lentes gruesas.
 
 Proyecto del Grupo 1, Optica & Ondas (UTEC, 2026-2).
-Graficos y estilo se importan aparte: ``lentes.graficos`` y ``lentes.estilo``.
+Se importan aparte: ``lentes.graficos`` y ``lentes.estilo`` (figuras) y
+``lentes.a_mano`` (ejemplo resuelto con un metodo independiente).
 """
 from .lente import Lente, lente_biconvexa
 from .paraxial import (
@@ -22,7 +23,9 @@ from .trazado import (
     detalle_refraccion,
     imagen_de_dos_rayos,
     interseccion,
+    interseccion_exacta,
     interseccion_rectas,
+    raices_cuadratica,
     rayo_hacia,
     refractar,
     trazar,
@@ -48,12 +51,14 @@ __all__ = [
     "imagen_lente_delgada",
     "imagen_paraxial",
     "interseccion",
+    "interseccion_exacta",
     "interseccion_rectas",
     "lente_biconvexa",
     "matriz_refraccion",
     "matriz_sistema",
     "matriz_traslacion",
     "parabolica",
+    "raices_cuadratica",
     "rayo_hacia",
     "refractar",
     "trazar",

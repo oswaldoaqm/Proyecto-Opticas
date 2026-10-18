@@ -19,6 +19,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
+from matplotlib.patches import Arc  # noqa: E402
 
 from lentes import (  # noqa: E402
     cruce_con_eje,
@@ -30,6 +31,7 @@ from lentes import (  # noqa: E402
 )
 from lentes.estilo import (  # noqa: E402
     AZUL,
+    EJE,
     NARANJA,
     RAMPA_AZUL,
     REJILLA,
@@ -158,6 +160,105 @@ def boceto_trazado():
     fig.suptitle("Boceto del Grupo 1 — trazado vectorial en una lente biconvexa gruesa "
                  f"(R = {R:g}, espesor = {espesor:g}, objeto en y = {yP:g})",
                  x=0.06, ha="left", fontsize=11.5, color=TINTA, y=0.995)
+    return fig
+
+
+def _girar(v):
+    """Punto o vector del modelo (x, y) -> coordenadas de la vista girada (y, x)."""
+    return np.array([v[1], v[0]], dtype=float)
+
+
+def _angulo_vista(v) -> float:
+    w = _girar(v)
+    return float(np.degrees(np.arctan2(w[1], w[0])))
+
+
+def _flecha(ax, origen, vector, color, lw=1.6, z=6):
+    o, v = _girar(origen), _girar(vector)
+    ax.annotate("", xy=o + v, xytext=o, zorder=z,
+                arrowprops=dict(arrowstyle="-|>", color=color, lw=lw, shrinkA=0, shrinkB=0,
+                                mutation_scale=11))
+
+
+def _arco(ax, centro, v1, v2, r, color, texto, factor=1.75):
+    """Arco del angulo entre las direcciones v1 y v2 (el menor), con su etiqueta."""
+    c = _girar(centro)
+    a1, a2 = _angulo_vista(v1), _angulo_vista(v2)
+    d = (a2 - a1 + 180.0) % 360.0 - 180.0
+    t1, t2 = (a1, a1 + d) if d >= 0 else (a1 + d, a1)
+    ax.add_patch(Arc(c, 2 * r, 2 * r, theta1=t1, theta2=t2, color=color, lw=1.2, zorder=5))
+    m = np.radians(0.5 * (t1 + t2))
+    ax.text(c[0] + factor * r * np.cos(m), c[1] + factor * r * np.sin(m), texto, color=color,
+            ha="center", va="center", fontsize=9, zorder=7)
+
+
+@figura("fig01_geometria_refraccion")
+def geometria_refraccion():
+    """Construccion vectorial en cada cara: tangente, normal del enunciado, normal usada y angulos."""
+    lente = lente_biconvexa(10.0, 10.0, 2.0, 1.5, k1=-1.0, k2=-1.0)
+    P = np.array([0.0, -30.0])
+    tr = trazar(lente, P, rayo_hacia(lente, P, 3.0))
+    fig, axs = plt.subplots(1, 2, figsize=(11, 4.6))
+    fig.subplots_adjust(left=0.03, right=0.97, top=0.84, bottom=0.08, wspace=0.08)
+    paneles = (
+        (axs[0], 1, lente.abajo, "(a) Cara g: del aire al vidrio", ("aire, n = 1", "vidrio, $n_L$ = 1.5")),
+        (axs[1], 2, lente.arriba, "(b) Cara f: del vidrio al aire", ("vidrio, $n_L$ = 1.5", "aire, n = 1")),
+    )
+    largo_vector, largo_rayo = 0.62, 1.0
+    for ax, i, sup, titulo, (medio_entrada, medio_salida) in paneles:
+        Q = tr.puntos[i]
+        u_in, u_out = tr.direcciones[i - 1], tr.direcciones[i]
+        det = tr.detalles[i - 1]
+        t_hat, n_enunciado, n_usada = sup.tangente(Q[0]), sup.normal(Q[0]), det.normal
+
+        dibujar_lente(ax, lente)
+        for v, estilo in ((t_hat, (0, (5, 3))), (n_usada, (0, (1, 2)))):  # rectas guia
+            a, b = _girar(Q - 1.4 * v), _girar(Q + 1.4 * v)
+            ax.plot([a[0], b[0]], [a[1], b[1]], color=TENUE, lw=0.9, ls=estilo, zorder=2)
+
+        # el rayo: incidente y refractado, con una punta de flecha a mitad de cada tramo
+        for inicio, d in ((Q - largo_rayo * u_in, u_in), (Q, u_out)):
+            a, b = _girar(inicio), _girar(inicio + largo_rayo * d)
+            ax.plot([a[0], b[0]], [a[1], b[1]], color=AZUL, lw=2.2, zorder=4, solid_capstyle="round")
+            _flecha(ax, inicio + 0.45 * largo_rayo * d, 0.12 * d, AZUL, lw=2.2, z=4)
+
+        _flecha(ax, Q, largo_vector * t_hat, TINTA_2, lw=1.4)
+        _flecha(ax, Q, largo_vector * n_enunciado, TENUE, lw=1.4)
+        _flecha(ax, Q, largo_vector * n_usada, NARANJA, lw=2.2, z=7)
+        _arco(ax, Q, n_usada, -u_in, 0.36, TINTA, f"$\\theta_i$ = {np.degrees(det.theta_i):.1f}°", factor=1.6)
+        _arco(ax, Q, -n_usada, u_out, 0.36, TINTA, f"$\\theta_t$ = {np.degrees(det.theta_t):.1f}°", factor=1.6)
+
+        # etiquetas de los vectores, justo despues de la punta (sin tapar la flecha)
+        caja = dict(boxstyle="round,pad=0.15", fc=SUPERFICIE, ec="none", alpha=0.9)
+        for vector, texto, color in ((t_hat, "$\\hat t$", TINTA_2),
+                                     (n_enunciado, "$\\hat n$ del enunciado", TENUE),
+                                     (n_usada, "normal usada\n($\\hat n \\cdot \\hat u < 0$)", NARANJA)):
+            w = _girar(vector)
+            p = _girar(Q + (largo_vector + 0.06) * vector)
+            ax.text(p[0], p[1], texto, color=color, fontsize=8.5, bbox=caja, zorder=8,
+                    ha="left" if w[0] > 0.3 else ("right" if w[0] < -0.3 else "center"),
+                    va="bottom" if w[1] > 0.3 else ("top" if w[1] < -0.3 else "center"))
+        ax.text(0.03, 0.96, medio_entrada, transform=ax.transAxes, ha="left", va="top",
+                color=TINTA_2, fontsize=9, bbox=caja, zorder=8)
+        ax.text(0.97, 0.96, medio_salida, transform=ax.transAxes, ha="right", va="top",
+                color=TINTA_2, fontsize=9, bbox=caja, zorder=8)
+
+        c = _girar(Q)
+        ax.set_xlim(c[0] - 1.15, c[0] + 1.15)
+        ax.set_ylim(c[1] - 0.95, c[1] + 0.95)
+        ax.set_aspect("equal")
+        ax.set_xticks([])
+        ax.set_yticks([])
+        for lado in ("top", "right", "bottom", "left"):
+            ax.spines[lado].set_visible(True)
+            ax.spines[lado].set_color(EJE)
+        ax.set_title(titulo, loc="left", fontsize=10)
+
+    fig.suptitle("Refracción vectorial: en cada cara se usa la normal que mira hacia el medio de donde llega la luz",
+                 x=0.03, ha="left", fontsize=11, color=TINTA, y=0.99)
+    fig.text(0.03, 0.02, "Rayo de P = (0, −30) que entra a la altura x = 3 en una lente de caras parabólicas "
+             "(R = 10, espesor 2). Vista girada: la luz avanza de izquierda a derecha.",
+             ha="left", fontsize=8.5, color=TINTA_2)
     return fig
 
 

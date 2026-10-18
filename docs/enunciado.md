@@ -11,21 +11,32 @@ Se considera una lente biconvexa de índice $n_L$, limitada por dos curvas suave
 
 ## Matriz de cumplimiento
 
-Cada fila es un requisito del enunciado. Se actualiza con cada avance.
+Cada fila es un requisito del enunciado. Se actualiza con cada avance. No hay rúbrica oficial: esta matriz y la rúbrica interna de abajo hacen ese papel.
 
 | ID | Requisito | Dónde se cumple | Estado |
 |---|---|---|---|
-| A1 | Modelar cada rayo con la recta paramétrica $\mathbf L(\lambda) = \mathbf P_0 + \lambda\hat{\mathbf u}$ e indicar cómo se halla su intersección con $y = f(x)$ o $y = g(x)$ | Código: `lentes.trazado.interseccion` · deducción escrita: pendiente | en progreso |
-| A2 | Construir $\hat t$ y $\hat n$ para $y = f(x)$ y explicar cómo elegir el sentido correcto de la normal en cada refracción | Código: `Superficie.tangente`, `Superficie.normal`, `refractar` · [decisión 0002](decisiones/0002-normal-y-snell-vectorial.md) · texto del póster: pendiente | en progreso |
-| A3 | Aplicar el procedimiento a una biconvexa ($f$ y $g$ de concavidad contraria, $n_L = 1.5$): para un punto objeto, trazar al menos dos rayos, sus dos refracciones y la posición de la imagen | [Notebook 00](../notebooks/00_boceto_trazado.ipynb) (boceto) · ejemplo resuelto a mano: pendiente | en progreso |
-| A4 | Comparar con la aproximación paraxial: en qué condiciones coinciden y cuándo aparecen diferencias apreciables | `lentes.paraxial` · fig00 (boceto) · discusión: pendiente | en progreso |
+| A1 | Modelar cada rayo con la recta paramétrica $\mathbf L(\lambda) = \mathbf P_0 + \lambda\hat{\mathbf u}$ e indicar cómo se halla su intersección con $y = f(x)$ o $y = g(x)$ | [Deducción](deduccion.md), secciones 2 y 3 · `interseccion`, `interseccion_exacta` · pruebas en `tests/test_exacta.py` | listo |
+| A2 | Construir $\hat t$ y $\hat n$ para $y = f(x)$ y explicar cómo elegir el sentido correcto de la normal en cada refracción | [Deducción](deduccion.md), secciones 4 a 6 · fig01 · [decisión 0002](decisiones/0002-normal-y-snell-vectorial.md) · `refractar` | listo |
+| A3 | Aplicar el procedimiento a una biconvexa ($f$ y $g$ de concavidad contraria, $n_L = 1.5$): para un punto objeto, trazar al menos dos rayos, sus dos refracciones y la posición de la imagen | [Notebook 01](../notebooks/01_ejemplo_resuelto.ipynb): cuatro rayos con todos los pasos, imagen de cada punto objeto, verificado contra el trazador | listo |
+| A4 | Comparar con la aproximación paraxial: en qué condiciones coinciden y cuándo aparecen diferencias apreciables | `lentes.paraxial` · fig00 y notebook 01 (comparación puntual) · discusión: pendiente | en progreso |
 | A5 | Analizar cómo cambia la imagen cuando los rayos incidentes se alejan del eje y relacionarlo con la aberración esférica | fig00, panel (b) (boceto) · análisis final: pendiente | en progreso |
 | A6 | Simulación (Python, MATLAB u otro) del trazado vectorial que permita variar $P$, $n_L$, $f(x)$, $g(x)$ y $\hat u_i$, y muestre rayos incidentes, transmitidos y emergentes y la posición de la imagen | Núcleo listo (`src/lentes`) · interfaz interactiva: pendiente | en progreso |
-| E1 | Póster académico | `poster/` | pendiente |
-| E2 | Deducción del procedimiento vectorial | — | pendiente |
+| E1 | Póster académico | `poster/` · formato por confirmar | pendiente |
+| E2 | Deducción del procedimiento vectorial | [docs/deduccion.md](deduccion.md) y fig01 · falta llevarla al póster | listo |
 | E3 | Simulación funcional | — | pendiente |
-| E4 | Trazado de rayos para al menos dos puntos objeto | Notebook 00 (boceto: $P$ en el eje y $P_2$ fuera del eje) | en progreso |
-| E5 | Comparación con la aproximación paraxial | fig00 (boceto) | en progreso |
+| E4 | Trazado de rayos para al menos dos puntos objeto | Notebook 01: $P_1 = (0, -30)$ en el eje y $P_2 = (-1, -30)$ fuera del eje | listo |
+| E5 | Comparación con la aproximación paraxial | fig00 (boceto) y notebook 01 · gráficas finales: pendiente | en progreso |
 | E6 | Discusión física de las aberraciones observadas | — | pendiente |
 
-> Si hay una rúbrica oficial aparte, se copia aquí y se cruza fila por fila con esta tabla.
+## Rúbrica interna
+
+Además de cumplir cada fila, revisamos el trabajo con los criterios que aplicaría un jurado de investigadores:
+
+| Criterio | Qué buscamos |
+|---|---|
+| Corrección física | Ecuaciones deducidas, no copiadas; hipótesis explícitas; signos y sentidos justificados |
+| Validación | Cada resultado comparado con un límite conocido o con un cálculo independiente ([decisión 0006](decisiones/0006-validar-contra-teoria.md)) |
+| Reproducibilidad | Cualquier figura o número se regenera con un comando; CI en verde |
+| Claridad | El póster se entiende en dos minutos y cada integrante explica su parte |
+| Calidad visual | Figuras legibles, rotuladas, con paleta accesible y generadas por código |
+| Profundidad | Al menos dos extras que van más allá del enunciado ([plan](plan.md)) |
