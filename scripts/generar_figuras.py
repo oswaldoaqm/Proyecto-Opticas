@@ -506,6 +506,47 @@ def forma_y_asfericas():
     return fig
 
 
+URL_SIMULADOR = "https://oswaldoaqm.github.io/Proyecto-Opticas/"
+
+
+@figura("fig05_qr_simulador")
+def qr_simulador():
+    """Codigo QR de la pagina web del simulador, para el poster (vectorial en el SVG)."""
+    import segno
+    from matplotlib.patches import PathPatch, Rectangle
+    from matplotlib.path import Path as Trazo
+
+    matriz = np.array([[bool(v) for v in fila] for fila in segno.make(URL_SIMULADOR, error="q", micro=False).matrix])
+    n, borde, solape = matriz.shape[0], 4, 0.02   # el solape evita rendijas blancas entre modulos al imprimir
+    vertices, codigos = [], []
+    for i, fila in enumerate(matriz):
+        y, j = n - 1 - i, 0
+        while j < n:
+            if not fila[j]:
+                j += 1
+                continue
+            k = j
+            while k < n and fila[k]:
+                k += 1
+            x0, x1, y0, y1 = j - solape, k + solape, y - solape, y + 1 + solape
+            vertices += [(x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)]
+            codigos += [Trazo.MOVETO, Trazo.LINETO, Trazo.LINETO, Trazo.LINETO, Trazo.CLOSEPOLY]
+            j = k
+
+    fig = plt.figure(figsize=(3.2, 3.95))
+    ax = fig.add_axes([0.0, 0.19, 1.0, 0.81])
+    ax.add_patch(Rectangle((-borde, -borde), n + 2 * borde, n + 2 * borde, color="#ffffff", zorder=0))
+    ax.add_patch(PathPatch(Trazo(vertices, codigos), facecolor=TINTA, edgecolor="none", zorder=1))
+    ax.set_xlim(-borde, n + borde)
+    ax.set_ylim(-borde, n + borde)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    fig.text(0.5, 0.115, "Simulación interactiva", ha="center", fontsize=12, color=TINTA, weight="bold")
+    fig.text(0.5, 0.045, URL_SIMULADOR.removeprefix("https://").rstrip("/"), ha="center", fontsize=8.5,
+             color=TINTA_2, family="monospace")
+    return fig
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Regenera las figuras del proyecto en figuras/.")
     parser.add_argument("nombres", nargs="*", help="figuras a generar (por defecto, todas)")
