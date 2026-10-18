@@ -26,6 +26,8 @@ class Superficie:
     y_vertice : s(0).
     radio_vertice : 1 / s''(0) con signo; ``np.inf`` si la cara es plana en el vertice.
     nombre : etiqueta para graficos y mensajes.
+    k : constante conica si la cara es una conica (permite la interseccion exacta,
+        ``trazado.interseccion_exacta``); None si es una formula arbitraria.
     """
 
     s: Funcion
@@ -33,6 +35,7 @@ class Superficie:
     y_vertice: float
     radio_vertice: float
     nombre: str = ""
+    k: float | None = None
 
     def __call__(self, x):
         return self.s(x)
@@ -75,7 +78,8 @@ def conica(y_vertice: float, radio: float, k: float = 0.0, nombre: str = "") -> 
         with np.errstate(invalid="ignore", divide="ignore"):
             return c * x / np.sqrt(1.0 - (1.0 + k) * c**2 * x**2)
 
-    return Superficie(s=s, ds=ds, y_vertice=float(y_vertice), radio_vertice=float(radio), nombre=nombre)
+    return Superficie(s=s, ds=ds, y_vertice=float(y_vertice), radio_vertice=float(radio), nombre=nombre,
+                      k=float(k))
 
 
 def esferica(y_vertice: float, radio: float, nombre: str = "") -> Superficie:
