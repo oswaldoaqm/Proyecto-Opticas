@@ -20,6 +20,9 @@ Cada pieza del código se compara con un resultado conocido mediante pruebas aut
 | $\Delta y \propto h^2$ para $h$ pequeño | Aberración esférica de tercer orden |
 | Objeto fuera del eje: diferencias con la paraxial $\propto x_P^2$ a lo largo del eje y $\propto x_P^3$ en altura | Aberraciones de campo de tercer orden |
 | Objeto dentro de la distancia focal → imagen virtual en el lugar paraxial | Prolongación de rayos hacia atrás |
+| Intersección exacta con cónicas igual a la numérica, en cientos de rayos al azar y cinco formas de cara | Las dos maneras de hallar el impacto |
+| Snell con ángulos igual a Snell vectorial; el ejemplo resuelto "a mano" igual al trazador, punto por punto | Todo el recorrido del rayo, con dos implementaciones independientes |
+| Fórmula cuadrática estable frente a la escolar, contra un cálculo con 60 cifras | Pérdida de cifras en rayos casi paralelos al eje |
 
 ## Consecuencias
 - Si un cambio rompe la física, una prueba falla antes de que el error llegue al póster.
