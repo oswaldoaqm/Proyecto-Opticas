@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulador de lentes reales</title>
+<meta name="description" content="Trazado vectorial de rayos en una lente gruesa: mueve el objeto, cambia el índice o la forma de las caras y mira dónde se forma la imagen.">
+<meta property="og:title" content="Simulador de lentes reales">
+<meta property="og:description" content="Trazado vectorial de rayos en una lente gruesa. Grupo 1, Óptica &amp; Ondas, UTEC 2026-2.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3c5 4 5 22 0 26c-5-4-5-22 0-26z' fill='%23e4edf8' stroke='%2352514e' stroke-width='1.6'/%3E%3Cpath d='M2 9l12 4' stroke='%232a78d6' stroke-width='2.2' fill='none'/%3E%3Cpath d='M14 13l4 2' stroke='%23eb6834' stroke-width='2.2' fill='none'/%3E%3Cpath d='M18 15l12 9' stroke='%231baf7a' stroke-width='2.2' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<div class="contenedor">
+
+<header class="cabecera">
+  <p class="antetitulo">Grupo 1 · Óptica &amp; Ondas · UTEC 2026-2</p>
+  <h1>Trazado vectorial de rayos en una lente gruesa</h1>
+  <p class="entrada">Cada rayo se refracta dos veces, una en cada cara. Mueve el objeto <b>P</b>, cambia el índice o la forma de las caras y mira dónde se cruzan los rayos al salir.</p>
+</header>
+
+<main>
+<section class="banco" aria-label="Simulación">
+  <div class="escenario">
+    <div class="figura">
+      <svg id="lienzo" role="img" aria-label="Lente, rayos y posición de la imagen"></svg>
+      <div class="vista" role="group" aria-label="Encuadre de la figura">
+        <button type="button" id="vista-todo" aria-pressed="true">Todo</button>
+        <button type="button" id="vista-imagen" aria-pressed="false">Zoom<span class="largo"> a la imagen</span></button>
+      </div>
+      <p id="aviso-lente" class="aviso-lente" role="alert" hidden></p>
+    </div>
+    <dl class="lectura">
+      <div><dt id="t-imagen">Imagen<span class="largo"> (rayos 1 y 2)</span></dt><dd id="l-imagen">-</dd></div>
+      <div><dt><span class="largo">Imagen </span>paraxial</dt><dd id="l-paraxial">-</dd></div>
+      <div><dt>Diferencia</dt><dd id="l-diferencia">-</dd></div>
+    </dl>
+    <ul class="estados" id="estados"></ul>
+  </div>
+
+  <form class="controles" id="controles" autocomplete="off" novalidate>
+    <ul class="empezar">
+      <li>Arrastra P hacia la lente: la imagen se aleja y, al pasar el foco, se vuelve virtual.</li>
+      <li>Elige caras esféricas: la imagen paraxial no cambia, pero los rayos alejados del eje enfocan antes.</li>
+      <li>Separa los rayos 1 y 2 y mira cómo crece la diferencia con la paraxial.</li>
+    </ul>
+
+    <fieldset>
+      <legend>Caso</legend>
+      <label class="oculto" for="caso">Caso de ejemplo</label>
+      <select id="caso"></select>
+      <div class="fila">
+        <p class="nota" id="nota-caso"></p>
+        <button type="button" class="boton chico" id="restablecer">Restablecer</button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Objeto P</legend>
+      <div class="control">
+        <label for="xP">Posición x<sub>P</sub></label>
+        <input id="xP-n" type="number" inputmode="decimal" step="0.01" aria-label="x de P">
+        <input id="xP" type="range" min="-8" max="8" step="0.01">
+      </div>
+      <div class="control">
+        <label for="yP">Posición y<sub>P</sub></label>
+        <input id="yP-n" type="number" inputmode="decimal" step="0.01" aria-label="y de P">
+        <input id="yP" type="range" min="-90" max="-1.5" step="0.01">
+      </div>
+      <p class="nota">También puedes arrastrar P en la figura.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Lente</legend>
+      <div class="control">
+        <label for="n">Índice n<sub>L</sub></label>
+        <input id="n-n" type="number" inputmode="decimal" step="0.0001" aria-label="índice de la lente">
+        <input id="n" type="range" min="1" max="2.5" step="0.01">
+      </div>
+      <div class="segmentos" role="radiogroup" aria-label="Forma de las caras">
+        <input type="radio" name="modo" id="modo-conica" value="conica" checked>
+        <label for="modo-conica">Cónicas</label>
+        <input type="radio" name="modo" id="modo-formula" value="formula">
+        <label for="modo-formula">Fórmula libre</label>
+      </div>
+
+      <div class="grupo" id="grupo-conica">
+        <div class="control">
+          <label for="R1">Radio de g, R<sub>1</sub></label>
+          <input id="R1-n" type="number" inputmode="decimal" step="0.1" aria-label="radio de la cara g">
+          <input id="R1" type="range" min="3" max="60" step="0.1">
+        </div>
+        <div class="control">
+          <label for="k1">Cónica de g, k<sub>1</sub> <span class="tipo" id="k1-tipo"></span></label>
+          <input id="k1-n" type="number" inputmode="decimal" step="0.01" aria-label="constante cónica de la cara g">
+          <input id="k1" type="range" min="-5" max="2" step="0.01">
+        </div>
+        <div class="control">
+          <label for="R2">Radio de f, R<sub>2</sub></label>
+          <input id="R2-n" type="number" inputmode="decimal" step="0.1" aria-label="radio de la cara f">
+          <input id="R2" type="range" min="3" max="60" step="0.1">
+        </div>
+        <div class="control">
+          <label for="k2">Cónica de f, k<sub>2</sub> <span class="tipo" id="k2-tipo"></span></label>
+          <input id="k2-n" type="number" inputmode="decimal" step="0.01" aria-label="constante cónica de la cara f">
+          <input id="k2" type="range" min="-5" max="2" step="0.01">
+        </div>
+        <div class="control">
+          <label for="d">Espesor en el eje, d</label>
+          <input id="d-n" type="number" inputmode="decimal" step="0.05" aria-label="espesor en el eje">
+          <input id="d" type="range" min="0.2" max="8" step="0.05">
+        </div>
+        <p class="nota">Cada cara es una cónica: k = 0 es una esfera, k = -1 una parábola, k &lt; -1 una hipérbola.</p>
+      </div>
+
+      <div class="grupo" id="grupo-formula" hidden>
+        <div class="campo">
+          <label for="g-formula">g(x), cara por donde entra la luz</label>
+          <input id="g-formula" type="text" spellcheck="false" autocapitalize="off" autocomplete="off">
+          <p class="error" id="g-error" hidden></p>
+        </div>
+        <div class="campo">
+          <label for="f-formula">f(x), cara por donde sale</label>
+          <input id="f-formula" type="text" spellcheck="false" autocapitalize="off" autocomplete="off">
+          <p class="error" id="f-error" hidden></p>
+        </div>
+        <div class="campo">
+          <label for="a-formula">Semiapertura (vacío: donde se juntan las caras)</label>
+          <input id="a-formula" type="text" inputmode="decimal" spellcheck="false" autocomplete="off">
+          <p class="error" id="a-error" hidden></p>
+        </div>
+        <p class="nota">Usa x, números, + - * / ^, paréntesis, pi y funciones como sqrt, sin, cos o exp. Ejemplo: 1 - x^2/20. La cara f debe quedar por encima de g.</p>
+      </div>
+      <p class="nota datos" id="nota-lente"></p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Rayos</legend>
+      <div class="control">
+        <label for="a1">Rayo 1: ángulo α<sub>1</sub></label>
+        <input id="a1-n" type="number" inputmode="decimal" step="0.01" aria-label="ángulo del rayo 1 en grados">
+        <input id="a1" type="range" step="0.01">
+        <p class="nota datos" id="a1-nota"></p>
+      </div>
+      <div class="control">
+        <label for="a2">Rayo 2: ángulo α<sub>2</sub></label>
+        <input id="a2-n" type="number" inputmode="decimal" step="0.01" aria-label="ángulo del rayo 2 en grados">
+        <input id="a2" type="range" step="0.01">
+        <p class="nota datos" id="a2-nota"></p>
+      </div>
+      <div class="control">
+        <label for="abanico">Rayos del abanico</label>
+        <input id="abanico-n" type="number" inputmode="numeric" step="1" aria-label="número de rayos del abanico">
+        <input id="abanico" type="range" min="0" max="41" step="1">
+      </div>
+      <p class="nota">Los ángulos se miden desde el eje óptico: û = (sen α, cos α). La imagen es el cruce de los rayos 1 y 2; el abanico muestra los demás.</p>
+    </fieldset>
+  </form>
+</section>
+
+<section class="detalle">
+  <article>
+    <h2>Aberración esférica</h2>
+    <svg id="grafica" role="img" aria-label="Dónde cruza cada rayo frente a la altura a la que entra"></svg>
+    <p id="grafica-nota">Cada punto es un rayo. Si la lente no tuviera aberración, todos cruzarían en la imagen paraxial (Δy = 0). Con caras esféricas los rayos que entran más lejos del eje enfocan antes.</p>
+  </article>
+  <article>
+    <h2>Los rayos 1 y 2, cara por cara</h2>
+    <div class="tabla-envoltura">
+      <table id="tabla">
+        <thead><tr><th>Rayo</th><th>Paso</th><th>θ<sub>i</sub></th><th>θ<sub>t</sub></th><th>Dirección</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p>θ<sub>i</sub> y θ<sub>t</sub> se miden desde la normal de cada cara. Al entrar al vidrio el rayo se acerca a la normal y al salir se aleja.</p>
+  </article>
+</section>
+
+<section class="metodo">
+  <h2>Qué calcula la página</h2>
+  <ol>
+    <li><b>Rayo.</b> Cada rayo es la recta <span class="formula">L(λ) = P + λ û</span>, con <span class="formula">û = (sen α, cos α)</span>. El eje óptico es el eje y y la luz avanza en +y.</li>
+    <li><b>Impacto.</b> Se busca el primer λ &gt; 0 con <span class="formula">y(λ) = s(x(λ))</span>, donde s es g o f: se recorre el tramo del rayo que pasa por la lente y el cruce se afina por bisección.</li>
+    <li><b>Normal.</b> En el punto de impacto, <span class="formula">n̂ = (-s′, 1) / √(1 + s′²)</span>. Si <span class="formula">n̂ · û &gt; 0</span> se invierte, para que apunte hacia el medio de donde viene la luz.</li>
+    <li><b>Snell vectorial.</b> Con <span class="formula">η = n₁/n₂</span> y <span class="formula">cos θi = -n̂ · û</span>: <span class="formula">ût = η û + (η cos θi - cos θt) n̂</span>, donde <span class="formula">cos θt = √(1 - η²(1 - cos²θi))</span>. Si la raíz no existe hay reflexión total: <span class="formula">ûr = û + 2 cos θi n̂</span>.</li>
+    <li><b>Imagen.</b> Es el cruce de las rectas de dos rayos emergentes. Si se cortan antes de la lente, en sus prolongaciones, la imagen es virtual.</li>
+    <li><b>Paraxial.</b> Matrices ABCD de lente gruesa con el radio de vértice de cada cara: lo que predice la óptica de primer orden.</li>
+  </ol>
+  <p>Este código se compara de forma automática con el paquete Python del proyecto (<code>tests/test_web.py</code>): mismos puntos de impacto y mismas direcciones, con diferencias menores que 10<sup>-9</sup>.</p>
+  <p>Límites: rayos en el plano del dibujo, luz de un solo color y caras que se pueden escribir como y = f(x). Las longitudes están en unidades arbitrarias; puedes leerlas como milímetros.</p>
+</section>
+</main>
+
+<footer class="pie">
+  <p>Grupo 1: Diego Atoche, Angel Farro, Fernando Guillén y Alejandro Quispe. Profesores: Marco Cuyubamba y Eduardo Castillo.</p>
+  <p>Código, pruebas y documentación: <a href="https://github.com/oswaldoaqm/Proyecto-Opticas" target="_blank" rel="noopener">github.com/oswaldoaqm/Proyecto-Opticas</a> (licencia MIT).</p>
+</footer>
+
+</div>
+<script src="trazado.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
