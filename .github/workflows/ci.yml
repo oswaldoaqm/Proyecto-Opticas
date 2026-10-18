@@ -13,6 +13,7 @@ jobs:
   reproducir:
     name: Reproducir (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20      # si algo se cuelga, el trabajo se corta aqui (GitHub espera hasta 6 horas)
     strategy:
       fail-fast: false
       matrix:
@@ -44,4 +45,5 @@ jobs:
         run: python scripts/generar_figuras.py
 
       - name: Ejecutar los notebooks de principio a fin
-        run: jupyter nbconvert --to notebook --execute notebooks/*.ipynb --output-dir "$RUNNER_TEMP/notebooks"
+        # Ninguna celda tarda mas de unos segundos; el limite de 2 minutos evita esperas sin fin.
+        run: jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=120 notebooks/*.ipynb --output-dir "$RUNNER_TEMP/notebooks"
