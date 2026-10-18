@@ -1,0 +1,14 @@
+# Finales de linea LF en el repo y en todas las copias (tambien en Windows),
+# para que nadie vea "todo el archivo cambio" por culpa de CRLF.
+* text=auto eol=lf
+
+# Binarios: git no debe tocarlos
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+
+# Notebooks y SVG son texto
+*.ipynb text eol=lf
+*.svg text eol=lf
