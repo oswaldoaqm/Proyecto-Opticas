@@ -2,6 +2,15 @@
 
 Registro corto de avances, del más reciente al más antiguo.
 
+## 2026-10-18 (noche)
+- Actividades 4 y 5 ([`aberraciones.md`](aberraciones.md), [notebook 02](../notebooks/02_aberraciones.ipynb), fig02 a fig04).
+- La paraxial y el trazado difieren en 1 % con $h = 1.03$ (caras parabólicas) y $h = 0.78$ (esféricas). La ecuación de lente delgada tiene 7.3 % de error con $d = 2$.
+- Teoría de Seidel en `lentes.seidel`: predice el coeficiente de aberración del trazado con diferencia relativa de $10^{-9}$ en ocho lentes.
+- Mejor foco en $y = 14.52$ (radio RMS 0.11, tres veces menor que en el foco paraxial), a 2/3 del camino entre el foco paraxial y el marginal, como dice la teoría.
+- Forma óptima con $f = 10$: $q = 0.648$; en el límite de lente delgada, 0.714 como en los libros. Cónica que anula el tercer orden: $k = -2.33$, 154 veces menos aberración que la esfera.
+- El dato del Hubble en el plan ahora cita la constante cónica según STScI.
+- Los textos de las figuras y documentos usan "-" en lugar de rayas largas.
+
 ## 2026-10-18 (tarde)
 - Deducción completa del procedimiento vectorial ([`deduccion.md`](deduccion.md)): rayo paramétrico; intersección cuadrática (con la fórmula estable), cónica y numérica; tangente y normal; regla del sentido de la normal; Snell vectorial deducido desde la conservación de la componente tangencial; reflexión total; imagen por la regla de Cramer.
 - Ejemplo resuelto ([notebook 01](../notebooks/01_ejemplo_resuelto.ipynb)) con $P_1 = (0, -30)$ y $P_2 = (-1, -30)$ y cuatro rayos, calculado con un método independiente (cuadrática + Snell con ángulos). Imagen de $P_1$ en $y = 16.029$ (paraxial: $16.187$) e imagen de $P_2$ en $(0.530,\ 15.987)$ (paraxial: $(0.535,\ 16.187)$). Coincide con el trazador vectorial hasta $2\times10^{-16}$.
