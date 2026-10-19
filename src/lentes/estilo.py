@@ -5,6 +5,7 @@ amarillo) y una rampa azul de un solo tono para magnitudes ordenadas.
 """
 from __future__ import annotations
 
+import io
 from pathlib import Path
 
 import matplotlib as mpl
@@ -53,13 +54,23 @@ def color_por_altura(h: float, h_max: float) -> str:
 
 def guardar_figura(fig, ruta_sin_extension: Path, formatos=("png", "svg"), dpi: int = 200) -> list[Path]:
     """Guarda la figura sin fecha ni version en los metadatos, para que regenerarla
-    produzca exactamente los mismos archivos (diffs limpios en git)."""
+    produzca exactamente los mismos archivos (diffs limpios en git).
+
+    Los SVG se escriben con saltos de linea LF tambien en Windows: guardados
+    directo a un archivo saldrian con CRLF y git los marcaria como modificados
+    cada vez que se regeneran.
+    """
     ruta_sin_extension = Path(ruta_sin_extension)
     ruta_sin_extension.parent.mkdir(parents=True, exist_ok=True)
     metadatos = {"png": {"Software": None}, "svg": {"Date": None, "Creator": None}}
     rutas = []
     for fmt in formatos:
         ruta = ruta_sin_extension.with_suffix("." + fmt)
-        fig.savefig(ruta, dpi=dpi, bbox_inches="tight", metadata=metadatos.get(fmt))
+        if fmt == "svg":
+            datos = io.BytesIO()
+            fig.savefig(datos, format="svg", dpi=dpi, bbox_inches="tight", metadata=metadatos["svg"])
+            ruta.write_bytes(datos.getvalue().replace(b"\r\n", b"\n"))
+        else:
+            fig.savefig(ruta, dpi=dpi, bbox_inches="tight", metadata=metadatos.get(fmt))
         rutas.append(ruta)
     return rutas
