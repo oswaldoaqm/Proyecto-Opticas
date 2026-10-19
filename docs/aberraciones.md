@@ -1,6 +1,6 @@
 # Paraxial frente a vectorial y aberración esférica
 
-Actividades 4 y 5 (entregables E5 y E6) y dos extras. Los números salen del [notebook 02](../notebooks/02_aberraciones.ipynb) y las figuras de `scripts/generar_figuras.py`.
+Actividades 4 y 5 (entregables E5 y E6) y los extras 1 a 5 del [plan](plan.md). Los números salen de los notebooks [02](../notebooks/02_aberraciones.ipynb) y [04](../notebooks/04_frente_de_onda.ipynb) y las figuras de `scripts/generar_figuras.py`.
 
 Lente de trabajo: biconvexa simétrica, radios de vértice $R = 10$, espesor $2$, $n_L = 1.5$, objeto sobre el eje en $y = -30$. La comparamos con caras parabólicas ($k = -1$) y esféricas ($k = 0$). Las dos tienen la misma imagen paraxial, $y = 16.187$, porque solo cuenta la curvatura en el vértice.
 
@@ -75,18 +75,45 @@ La mejor forma aberra 4.5 veces menos que la peor, con la misma focal. Si el esp
 
 **Sensibilidad y el caso del Hubble.** $C_3$ cambia 0.115 por cada unidad de $k$. Un error de 1 % en $k$ mueve el rayo del borde 0.041, más que todo lo que queda de quinto orden: la forma asférica hay que fabricarla con precisión mejor que 1 %. En 1990 el espejo principal del telescopio Hubble salió con constante cónica -1.0139 en lugar de -1.0023, un error de 1.2 % ([STScI](https://www.stsci.edu/instrument-news/handbooks/wfpc2/W2_47.html)). El espejo quedó demasiado plano cerca del borde y el telescopio tuvo aberración esférica hasta que en 1993 se instalaron ópticas correctoras ([NASA](https://science.nasa.gov/mission/hubble/overview/hubbles-mirror-flaw)).
 
-## 5. Para el póster
+## 5. Frente de onda y límite de difracción (extra 5)
+
+![Frente de onda y límite de difracción](../figuras/fig06_frente_de_onda_difraccion.png)
+
+**Camino óptico.** Por el principio de Fermat, en una imagen perfecta todos los rayos llegan con el mismo camino óptico $\sum n\,\ell$. Para cada rayo se suma $n\,\ell$ hasta una esfera de referencia centrada en el punto imagen, que pasa por el vértice de salida, y el error del frente de onda es $W(h) = \mathrm{OPL}(\text{rayo axial}) - \mathrm{OPL}(h)$. Con la referencia en la imagen paraxial, el coeficiente de $h^4$ coincide con la predicción de Seidel, $S_I/8$, con diferencias relativas del orden de $10^{-6}$ en cuatro lentes. Es un tercer método, independiente del cruce de los rayos y de la suma de Seidel.
+
+**El mejor foco para las ondas.** Mover la referencia a lo largo del eje suma un desenfoque $W_{020}\rho^2$. El menor $W_\text{rms}$ está a mitad de camino entre el foco paraxial y el marginal ($W_{020} = -W_{040}$) y vale la cuarta parte del paraxial (fig06 a). Con una pupila pequeña el código da 0.4999 y 0.2501. La mancha geométrica más chica está a 2/3 del camino y el círculo de mínima confusión a 3/4 (sección 3): cada criterio de "mejor foco" cae en un lugar distinto.
+
+**¿Difracción o aberración?** Supuestos: longitudes en milímetros y luz verde ($\lambda = 550$ nm). Según el criterio de Maréchal, una lente está limitada por la difracción si $W_\text{rms} \le \lambda/14$, lo que equivale a un Strehl de 0.8 (el pico de la imagen de un punto dividido por el de una lente perfecta). El Strehl se calcula exacto con la integral de difracción de la pupila circular y coincide con la aproximación de Maréchal: 0.815 frente a 0.818 en el límite.
+
+| Lente (objeto en $y = -30$) | Diámetro límite | f/# en el límite | Radio de Airy en el límite | $W_\text{rms}$ con $h = 4$ mm | Strehl con $h = 4$ mm |
+|---|---|---|---|---|---|
+| Esfera ($k = 0$) | 2.34 mm | 6.5 | 4.4 μm | 11.3 λ | 0.003 |
+| Parábola ($k = -1$) | 2.69 mm | 5.7 | 3.8 μm | 5.9 λ | 0.006 |
+| Asférica ($k = -2.33$) | 8.19 mm | 2.0 | 1.35 μm | 0.06 λ | 0.85 |
+
+El límite de Maréchal casi coincide con la apertura donde la mancha geométrica, que crece como $h^3$, iguala al disco de Airy, que se achica como $1/h$: 1.33 mm frente a 1.35 mm de radio en la parábola (fig06 b y c).
+
+**Qué significa.** Con la lente casi toda abierta ($h = 4$ mm) manda la aberración: la mancha de la parábola mide 120 μm de radio RMS, cien veces el disco de Airy. Si se cierra la apertura a unos 2.7 mm de diámetro, la lente queda limitada por difracción y la imagen de un punto es el patrón de Airy (fig06 d). La asférica que anula el tercer orden aguanta casi toda la lente abierta, f/2, y junta unas 12 veces más luz que la esfera con la misma nitidez. El disco de Airy es el patrón de difracción de una abertura circular, el análogo de la rendija; así el trazado de rayos se conecta con la difracción.
+
+**Límites.** Difracción escalar, luz de un solo color, pupila uniforme y objeto sobre el eje. El resultado depende de la escala: una lente 10 veces más grande tiene 10 veces más $W$ medido en longitudes de onda.
+
+Código en `lentes.difraccion`; pruebas en `tests/test_difraccion.py` (Seidel, mitad de camino y un cuarto, patrón de Airy, Maréchal, escalas $h^4$, $h^3$ y $1/h$, y que los dos criterios coinciden); cálculos paso a paso en el [notebook 04](../notebooks/04_frente_de_onda.ipynb).
+
+## 6. Para el póster
 
 - El trazado vectorial y la paraxial coinciden solo con rayos cerca del eje: 1 % de diferencia ya con $h/R \approx 0.1$.
 - La ecuación de lente delgada falla por el espesor: 7.3 % en nuestra lente.
 - La aberración esférica medida con el trazado coincide con la teoría de Seidel con diferencia relativa de $10^{-9}$.
 - El mejor foco está entre el paraxial y el marginal, a 2/3 del camino, con una mancha tres veces menor.
 - Forma de la lente y caras asféricas reducen la aberración 4.5 y 154 veces.
+- Tres métodos independientes (cruce de los rayos, Seidel y camino óptico) dan la misma aberración de tercer orden.
+- Con toda la lente abierta manda la aberración; con 2.7 mm de diámetro (parábola) manda la difracción. La asférica está limitada por difracción hasta f/2.
 
 ## Referencias
 
 - W. T. Welford, *Aberrations of Optical Systems*, Adam Hilger, 1986 (suma de Seidel y aporte de superficies asféricas).
 - R. Kingslake y R. B. Johnson, *Lens Design Fundamentals*, 2.ª ed., Academic Press, 2010 (forma óptima de una lente).
-- E. Hecht, *Optics*, 5.ª ed., Pearson, 2017, cap. 6 (aberraciones).
+- E. Hecht, *Optics*, 5.ª ed., Pearson, 2017, cap. 6 (aberraciones) y cap. 10 (difracción y disco de Airy).
+- M. Born y E. Wolf, *Principles of Optics*, 7.ª ed., Cambridge University Press, 1999, cap. 9 (teoría de difracción de las aberraciones y criterio de Maréchal).
 - Space Telescope Science Institute, *WFPC2 Instrument Handbook*, sección sobre la función de dispersión de punto: [constante cónica del espejo del Hubble](https://www.stsci.edu/instrument-news/handbooks/wfpc2/W2_47.html).
 - NASA, [Hubble's Mirror Flaw](https://science.nasa.gov/mission/hubble/overview/hubbles-mirror-flaw).
