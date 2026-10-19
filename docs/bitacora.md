@@ -2,6 +2,10 @@
 
 Registro corto de avances, del más reciente al más antiguo.
 
+## 2026-10-18 (CI)
+- El CI se quedó colgado en Linux al ejecutar el notebook 03. Al reproducirlo, la ejecución con nbconvert se colgaba en casi la mitad de las corridas: el panel escribía en un widget Output con `with salida:` y el ejecutor se quedaba esperando una respuesta del kernel que ya había llegado. El panel ahora escribe la figura y el texto con `append_display_data` y `append_stdout`: 0 cuelgues en 20 corridas, y los controles funcionan igual en Jupyter.
+- El CI corta una celda que pase de 2 minutos y el trabajo completo a los 20 minutos, para que un cuelgue no dure horas.
+
 ## 2026-10-18 (simulación)
 - Simulación interactiva (actividad 6): página web en `web/` para el celular y [notebook 03](../notebooks/03_simulacion.ipynb) con controles. Se varían $P$, $n_L$, las caras (cónicas o fórmulas) y los ángulos de los rayos. Muestra rayos incidentes, transmitidos y emergentes, la imagen de dos rayos, la paraxial, los focos y avisos de reflexión total ([`simulacion.md`](simulacion.md)).
 - La página usa el trazador traducido a JavaScript; `tests/test_web.py` lo compara con Python en 10 casos, con diferencias menores que $10^{-9}$ ([decisión 0007](decisiones/0007-simulacion-web-en-javascript.md)).
