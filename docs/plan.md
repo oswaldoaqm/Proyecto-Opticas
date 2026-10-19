@@ -8,6 +8,7 @@
 **Avance:**
 - Semana 1: deducción ([`deduccion.md`](deduccion.md)) y ejemplo resuelto ([notebook 01](../notebooks/01_ejemplo_resuelto.ipynb)). Listo.
 - Semana 2: comparación paraxial y aberraciones ([`aberraciones.md`](aberraciones.md), fig02 a fig04) con los extras 1 a 3, y la simulación interactiva (A6, [`simulacion.md`](simulacion.md)): página web con código QR (extra 6) y notebook 03. Listo.
+- Extras 4 y 5: abanico de rayos, cáustica y círculo de mínima confusión (fig03), y frente de onda y límite de difracción ([`aberraciones.md`](aberraciones.md), sección 5, fig06 y [notebook 04](../notebooks/04_frente_de_onda.ipynb)). Listo.
 
 ## Hitos
 

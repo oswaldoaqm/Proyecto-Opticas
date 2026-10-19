@@ -43,15 +43,15 @@ pip install -e .
 ## Estructura
 
 ```
-├── src/lentes/        núcleo: caras, lente, trazado vectorial, paraxial, aberraciones, simulación
+├── src/lentes/        núcleo: caras, lente, trazado vectorial, paraxial, aberraciones, difracción, simulación
 ├── tests/             pruebas de la física contra resultados conocidos
 ├── scripts/           generar_figuras.py: regenera todas las figuras
-├── notebooks/         ejemplo resuelto, aberraciones y simulación con controles
+├── notebooks/         ejemplo resuelto, aberraciones, simulación con controles y frente de onda
 ├── web/               la simulación como página web (GitHub Pages)
 ├── figuras/           figuras generadas (PNG y SVG); no se editan a mano
 ├── docs/
 │   ├── deduccion.md   la deducción del método vectorial (actividades 1 y 2)
-│   ├── aberraciones.md  paraxial frente a vectorial y aberración esférica (4 y 5)
+│   ├── aberraciones.md  paraxial frente a vectorial, aberración esférica (4 y 5) y difracción
 │   ├── simulacion.md  la simulación interactiva (actividad 6)
 │   ├── enunciado.md   lo que pide el curso y la matriz de cumplimiento
 │   ├── plan.md        hitos de las tres semanas y extras
@@ -83,6 +83,7 @@ pip install -e .
 - Deducción del método vectorial: [`docs/deduccion.md`](docs/deduccion.md)
 - Ejemplo resuelto con dos puntos objeto: [`notebooks/01_ejemplo_resuelto.ipynb`](notebooks/01_ejemplo_resuelto.ipynb)
 - Paraxial frente a vectorial y aberración esférica: [`docs/aberraciones.md`](docs/aberraciones.md)
+- Frente de onda y límite de difracción (extra 5): [`docs/aberraciones.md`](docs/aberraciones.md), sección 5, y [`notebooks/04_frente_de_onda.ipynb`](notebooks/04_frente_de_onda.ipynb)
 - Simulación interactiva: [`docs/simulacion.md`](docs/simulacion.md), [página web](https://oswaldoaqm.github.io/Proyecto-Opticas/) y [`notebooks/03_simulacion.ipynb`](notebooks/03_simulacion.ipynb)
 - Qué pide el curso y qué está cubierto: [`docs/enunciado.md`](docs/enunciado.md)
 - Plan y extras: [`docs/plan.md`](docs/plan.md)
