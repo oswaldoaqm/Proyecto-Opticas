@@ -5,28 +5,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Simulador de lentes reales</title>
 <meta name="description" content="Trazado vectorial de rayos en una lente gruesa: mueve el objeto, cambia el índice o la forma de las caras y mira dónde se forma la imagen.">
+<meta name="theme-color" content="#e9eef4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a101c" media="(prefers-color-scheme: dark)">
 <meta property="og:title" content="Simulador de lentes reales">
 <meta property="og:description" content="Trazado vectorial de rayos en una lente gruesa. Grupo 1, Óptica &amp; Ondas, UTEC 2026-2.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3c5 4 5 22 0 26c-5-4-5-22 0-26z' fill='%23e4edf8' stroke='%2352514e' stroke-width='1.6'/%3E%3Cpath d='M2 9l12 4' stroke='%232a78d6' stroke-width='2.2' fill='none'/%3E%3Cpath d='M14 13l4 2' stroke='%23eb6834' stroke-width='2.2' fill='none'/%3E%3Cpath d='M18 15l12 9' stroke='%231baf7a' stroke-width='2.2' fill='none'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3c5 4 5 22 0 26c-5-4-5-22 0-26z' fill='%23dfe9f6' stroke='%2346566c' stroke-width='1.6'/%3E%3Cpath d='M2 9l12 4' stroke='%232a78d6' stroke-width='2.2' fill='none'/%3E%3Cpath d='M14 13l4 2' stroke='%23eb6834' stroke-width='2.2' fill='none'/%3E%3Cpath d='M18 15l12 9' stroke='%231baf7a' stroke-width='2.2' fill='none'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
+<canvas id="fondo" aria-hidden="true"></canvas>
+<canvas id="luz" aria-hidden="true"></canvas>
 <div class="contenedor">
 
 <header class="cabecera">
-  <p class="antetitulo">Grupo 1 · Óptica &amp; Ondas · UTEC 2026-2</p>
   <h1>Trazado vectorial de rayos en una lente gruesa</h1>
-  <p class="entrada">Cada rayo se refracta dos veces, una en cada cara. Mueve el objeto <b>P</b>, cambia el índice o la forma de las caras y mira dónde se cruzan los rayos al salir.</p>
+  <p class="entrada">Cada rayo se refracta dos veces: al entrar al vidrio y al salir. Elige un experimento, arrastra el objeto <b>P</b> o cambia la lente, y mira dónde se cruzan los rayos.</p>
 </header>
 
 <main>
 <section class="banco" aria-label="Simulación">
   <div class="escenario">
     <div class="figura">
-      <svg id="lienzo" role="img" aria-label="Lente, rayos y posición de la imagen"></svg>
+      <svg id="lienzo" role="img" tabindex="0" aria-label="Lente, rayos y posición de la imagen" aria-describedby="ayuda-figura"></svg>
+      <p id="ayuda-figura" class="oculto">Con la figura seleccionada, las flechas del teclado mueven P; con Mayús, en pasos largos.</p>
       <div class="vista" role="group" aria-label="Encuadre de la figura">
         <button type="button" id="vista-todo" aria-pressed="true">Todo</button>
         <button type="button" id="vista-imagen" aria-pressed="false">Zoom<span class="largo"> a la imagen</span></button>
@@ -34,32 +38,30 @@
       <p id="aviso-lente" class="aviso-lente" role="alert" hidden></p>
     </div>
     <dl class="lectura">
-      <div><dt id="t-imagen">Imagen<span class="largo"> (rayos 1 y 2)</span></dt><dd id="l-imagen">-</dd></div>
-      <div><dt><span class="largo">Imagen </span>paraxial</dt><dd id="l-paraxial">-</dd></div>
-      <div><dt>Diferencia</dt><dd id="l-diferencia">-</dd></div>
+      <div class="dato-imagen"><dt id="t-imagen">Imagen<span class="largo"> (rayos 1 y 2)</span></dt><dd id="l-imagen">-</dd></div>
+      <div class="dato-paraxial"><dt><span class="largo">Imagen </span>paraxial</dt><dd id="l-paraxial">-</dd></div>
+      <div class="dato-diferencia"><dt>Diferencia</dt><dd id="l-diferencia">-</dd></div>
     </dl>
-    <ul class="estados" id="estados"></ul>
+    <ul class="estados" id="estados" aria-label="Avisos" tabindex="0"></ul>
   </div>
 
   <form class="controles" id="controles" autocomplete="off" novalidate>
-    <ul class="empezar">
-      <li>Arrastra P hacia la lente: la imagen se aleja y, al pasar el foco, se vuelve virtual.</li>
-      <li>Elige caras esféricas: la imagen paraxial no cambia, pero los rayos alejados del eje enfocan antes.</li>
-      <li>Separa los rayos 1 y 2 y mira cómo crece la diferencia con la paraxial.</li>
-    </ul>
-
-    <fieldset>
-      <legend>Caso</legend>
-      <label class="oculto" for="caso">Caso de ejemplo</label>
-      <select id="caso"></select>
-      <div class="fila">
-        <p class="nota" id="nota-caso"></p>
+    <section class="experimentos" aria-labelledby="t-experimentos">
+      <div class="encabezado-panel">
+        <h2 id="t-experimentos">Experimentos</h2>
         <button type="button" class="boton chico" id="restablecer">Restablecer</button>
       </div>
-    </fieldset>
+      <div class="chips" id="experimentos" role="group" aria-labelledby="t-experimentos"></div>
+      <p class="nota-caso" id="nota-caso" aria-live="polite"></p>
+    </section>
 
-    <fieldset>
-      <legend>Objeto P</legend>
+    <div class="pestanas" role="tablist" aria-label="Controles">
+      <button type="button" role="tab" id="tab-objeto" aria-controls="panel-objeto" aria-selected="true">Objeto P</button>
+      <button type="button" role="tab" id="tab-lente" aria-controls="panel-lente" aria-selected="false" tabindex="-1">Lente</button>
+      <button type="button" role="tab" id="tab-rayos" aria-controls="panel-rayos" aria-selected="false" tabindex="-1">Rayos</button>
+    </div>
+
+    <div class="panel" role="tabpanel" id="panel-objeto" aria-labelledby="tab-objeto">
       <div class="control">
         <label for="xP">Posición x<sub>P</sub></label>
         <input id="xP-n" type="number" inputmode="decimal" step="0.01" aria-label="x de P">
@@ -70,11 +72,10 @@
         <input id="yP-n" type="number" inputmode="decimal" step="0.01" aria-label="y de P">
         <input id="yP" type="range" min="-90" max="-1.5" step="0.01">
       </div>
-      <p class="nota">También puedes arrastrar P en la figura.</p>
-    </fieldset>
+      <p class="nota">También puedes arrastrar P en la figura, o seleccionarla y moverlo con las flechas.</p>
+    </div>
 
-    <fieldset>
-      <legend>Lente</legend>
+    <div class="panel" role="tabpanel" id="panel-lente" aria-labelledby="tab-lente" hidden>
       <div class="control">
         <label for="n">Índice n<sub>L</sub></label>
         <input id="n-n" type="number" inputmode="decimal" step="0.0001" aria-label="índice de la lente">
@@ -135,10 +136,9 @@
         <p class="nota">Usa x, números, + - * / ^, paréntesis, pi y funciones como sqrt, sin, cos o exp. Ejemplo: 1 - x^2/20. La cara f debe quedar por encima de g.</p>
       </div>
       <p class="nota datos" id="nota-lente"></p>
-    </fieldset>
+    </div>
 
-    <fieldset>
-      <legend>Rayos</legend>
+    <div class="panel" role="tabpanel" id="panel-rayos" aria-labelledby="tab-rayos" hidden>
       <div class="control">
         <label for="a1">Rayo 1: ángulo α<sub>1</sub></label>
         <input id="a1-n" type="number" inputmode="decimal" step="0.01" aria-label="ángulo del rayo 1 en grados">
@@ -156,20 +156,20 @@
         <input id="abanico-n" type="number" inputmode="numeric" step="1" aria-label="número de rayos del abanico">
         <input id="abanico" type="range" min="0" max="41" step="1">
       </div>
-      <p class="nota">Los ángulos se miden desde el eje óptico: û = (sen α, cos α). La imagen es el cruce de los rayos 1 y 2; el abanico muestra los demás.</p>
-    </fieldset>
+      <p class="nota">Los ángulos se miden desde el eje óptico: û = (sen α, cos α). La imagen es el cruce de los rayos 1 y 2; si los separas, crece la diferencia con la paraxial.</p>
+    </div>
   </form>
 </section>
 
 <section class="detalle">
-  <article>
+  <article class="hoja">
     <h2>Aberración esférica</h2>
     <svg id="grafica" role="img" aria-label="Dónde cruza cada rayo frente a la altura a la que entra"></svg>
     <p id="grafica-nota">Cada punto es un rayo. Si la lente no tuviera aberración, todos cruzarían en la imagen paraxial (Δy = 0). Con caras esféricas los rayos que entran más lejos del eje enfocan antes.</p>
   </article>
-  <article>
+  <article class="hoja">
     <h2>Los rayos 1 y 2, cara por cara</h2>
-    <div class="tabla-envoltura">
+    <div class="tabla-envoltura" role="region" aria-label="Tabla de los rayos 1 y 2" tabindex="0">
       <table id="tabla">
         <thead><tr><th>Rayo</th><th>Paso</th><th>θ<sub>i</sub></th><th>θ<sub>t</sub></th><th>Dirección</th></tr></thead>
         <tbody></tbody>
@@ -179,28 +179,32 @@
   </article>
 </section>
 
-<section class="metodo">
+<section class="metodo hoja" id="metodo">
   <h2>Qué calcula la página</h2>
   <ol>
-    <li><b>Rayo.</b> Cada rayo es la recta <span class="formula">L(λ) = P + λ û</span>, con <span class="formula">û = (sen α, cos α)</span>. El eje óptico es el eje y y la luz avanza en +y.</li>
-    <li><b>Impacto.</b> Se busca el primer λ &gt; 0 con <span class="formula">y(λ) = s(x(λ))</span>, donde s es g o f: se recorre el tramo del rayo que pasa por la lente y el cruce se afina por bisección.</li>
-    <li><b>Normal.</b> En el punto de impacto, <span class="formula">n̂ = (-s′, 1) / √(1 + s′²)</span>. Si <span class="formula">n̂ · û &gt; 0</span> se invierte, para que apunte hacia el medio de donde viene la luz.</li>
-    <li><b>Snell vectorial.</b> Con <span class="formula">η = n₁/n₂</span> y <span class="formula">cos θi = -n̂ · û</span>: <span class="formula">ût = η û + (η cos θi - cos θt) n̂</span>, donde <span class="formula">cos θt = √(1 - η²(1 - cos²θi))</span>. Si la raíz no existe hay reflexión total: <span class="formula">ûr = û + 2 cos θi n̂</span>.</li>
+    <li><b>Rayo.</b> Cada rayo es la recta <math><mi>𝐋</mi><mo stretchy="false">(</mo><mi>λ</mi><mo stretchy="false">)</mo><mo>=</mo><mi>𝐏</mi><mo>+</mo><mi>λ</mi><mover accent="true"><mi>𝐮</mi><mo>^</mo></mover></math>, con <math><mover accent="true"><mi>𝐮</mi><mo>^</mo></mover><mo>=</mo><mo stretchy="false">(</mo><mi>sen</mi><mo rspace="0.1667em">&#x2061;</mo><mi>α</mi><mo>,</mo><mi>cos</mi><mo rspace="0.1667em">&#x2061;</mo><mi>α</mi><mo stretchy="false">)</mo></math>. El eje óptico es el eje y y la luz avanza en +y.</li>
+    <li><b>Impacto.</b> Se busca el primer <math><mi>λ</mi><mo>&gt;</mo><mn>0</mn></math> con <math><mi>y</mi><mo stretchy="false">(</mo><mi>λ</mi><mo stretchy="false">)</mo><mo>=</mo><mi>s</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">(</mo><mi>λ</mi><mo stretchy="false">)</mo><mo stretchy="false">)</mo></math>, donde s es g o f: se recorre el tramo del rayo que pasa por la lente y el cruce se afina por bisección.</li>
+    <li><b>Normal.</b> En el punto de impacto, <math><mover accent="true"><mi>𝐧</mi><mo>^</mo></mover><mo>=</mo><mfrac><mrow><mo stretchy="false">(</mo><mo>-</mo><msup><mi>s</mi><mo>′</mo></msup><mo>,</mo><mn>1</mn><mo stretchy="false">)</mo></mrow><msqrt><mn>1</mn><mo>+</mo><msup><mi>s</mi><mrow><mo>′</mo><mn>2</mn></mrow></msup></msqrt></mfrac></math>. Si <math><mover accent="true"><mi>𝐧</mi><mo>^</mo></mover><mo>·</mo><mover accent="true"><mi>𝐮</mi><mo>^</mo></mover><mo>&gt;</mo><mn>0</mn></math> se invierte, para que apunte hacia el medio de donde viene la luz.</li>
+    <li><b>Snell vectorial.</b> Con <math><mi>η</mi><mo>=</mo><msub><mi>n</mi><mn>1</mn></msub><mo>/</mo><msub><mi>n</mi><mn>2</mn></msub></math> y <math><mi>cos</mi><mo rspace="0.1667em">&#x2061;</mo><msub><mi>θ</mi><mi>i</mi></msub><mo>=</mo><mo>-</mo><mover accent="true"><mi>𝐧</mi><mo>^</mo></mover><mo>·</mo><mover accent="true"><mi>𝐮</mi><mo>^</mo></mover></math>:
+      <span class="formula-bloque" tabindex="0"><math display="block"><msub><mover accent="true"><mi>𝐮</mi><mo>^</mo></mover><mi>t</mi></msub><mo>=</mo><mi>η</mi><mover accent="true"><mi>𝐮</mi><mo>^</mo></mover><mo>+</mo><mo stretchy="false">(</mo><mi>η</mi><mi>cos</mi><mo rspace="0.1667em">&#x2061;</mo><msub><mi>θ</mi><mi>i</mi></msub><mo>-</mo><mi>cos</mi><mo rspace="0.1667em">&#x2061;</mo><msub><mi>θ</mi><mi>t</mi></msub><mo stretchy="false">)</mo><mover accent="true"><mi>𝐧</mi><mo>^</mo></mover><mo>,</mo></math></span>
+      <span class="formula-bloque" tabindex="0"><math display="block"><mi>cos</mi><mo rspace="0.1667em">&#x2061;</mo><msub><mi>θ</mi><mi>t</mi></msub><mo>=</mo><msqrt><mn>1</mn><mo>-</mo><msup><mi>η</mi><mn>2</mn></msup><mo stretchy="false">(</mo><mn>1</mn><mo>-</mo><msup><mi>cos</mi><mn>2</mn></msup><mo rspace="0.1667em">&#x2061;</mo><msub><mi>θ</mi><mi>i</mi></msub><mo stretchy="false">)</mo></msqrt><mo>.</mo></math></span>
+      Si la raíz no existe hay reflexión total: <math><msub><mover accent="true"><mi>𝐮</mi><mo>^</mo></mover><mi>r</mi></msub><mo>=</mo><mover accent="true"><mi>𝐮</mi><mo>^</mo></mover><mo>+</mo><mn>2</mn><mi>cos</mi><mo rspace="0.1667em">&#x2061;</mo><msub><mi>θ</mi><mi>i</mi></msub><mspace width="0.17em"></mspace><mover accent="true"><mi>𝐧</mi><mo>^</mo></mover></math>.</li>
     <li><b>Imagen.</b> Es el cruce de las rectas de dos rayos emergentes. Si se cortan antes de la lente, en sus prolongaciones, la imagen es virtual.</li>
     <li><b>Paraxial.</b> Matrices ABCD de lente gruesa con el radio de vértice de cada cara: lo que predice la óptica de primer orden.</li>
   </ol>
   <p>Este código se compara de forma automática con el paquete Python del proyecto (<code>tests/test_web.py</code>): mismos puntos de impacto y mismas direcciones, con diferencias menores que 10<sup>-9</sup>.</p>
-  <p>Límites: rayos en el plano del dibujo, luz de un solo color y caras que se pueden escribir como y = f(x). Las longitudes están en unidades arbitrarias; puedes leerlas como milímetros.</p>
+  <p>Límites: rayos en el plano del dibujo, luz de un solo color y caras que se pueden escribir como y = f(x). Las longitudes están en unidades arbitrarias; puedes leerlas como milímetros. El fondo de la página es la cáustica de esta misma lente con caras esféricas, calculada con el mismo código.</p>
 </section>
 </main>
 
 <footer class="pie">
-  <p>Grupo 1: Diego Atoche, Angel Farro, Fernando Guillén y Alejandro Quispe. Profesores: Marco Cuyubamba y Eduardo Castillo.</p>
+  <p>Grupo 1: Diego Atoche, Angel Farro, Fernando Guillén y Alejandro Quispe. Profesores: Marco Cuyubamba y Eduardo Castillo. Óptica &amp; Ondas, UTEC 2026-2.</p>
   <p>Código, pruebas y documentación: <a href="https://github.com/oswaldoaqm/Proyecto-Opticas" target="_blank" rel="noopener">github.com/oswaldoaqm/Proyecto-Opticas</a> (licencia MIT).</p>
 </footer>
 
 </div>
 <script src="trazado.js"></script>
 <script src="app.js"></script>
+<script src="fondo.js"></script>
 </body>
 </html>

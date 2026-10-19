@@ -39,39 +39,40 @@
   const BASE = { R1: 10, R2: 10, d: 2 };
   const CASOS = {
     parabolica: {
-      nombre: "Caras parabólicas (ejemplo)",
-      nota: "La lente del notebook 01: n = 1.5, R = 10, d = 2 y rayos a +2° y -2° desde P = (0, -30).",
+      titulo: "Lente del ejemplo",
+      nota: "La lente del ejemplo resuelto: n = 1.5, R = 10, d = 2, caras parabólicas y rayos a +2° y -2° desde P = (0, -30). Arrastra P hacia la lente y mira cómo se aleja la imagen.",
       n: 1.5, P: [0, -30], conica: { ...BASE, k1: -1, k2: -1 }, alfas: [2, -2],
     },
     esferica: {
-      nombre: "Caras esféricas",
-      nota: "Los mismos radios de vértice: la misma imagen paraxial, pero más aberración.",
+      titulo: "Caras esféricas",
+      nota: "Los mismos radios de vértice y la misma imagen paraxial, pero los rayos que entran lejos del eje cruzan antes: más aberración. Mírala en la gráfica de abajo.",
       n: 1.5, P: [0, -30], conica: { ...BASE, k1: 0, k2: 0 }, alfas: [7, -7],
     },
     asferica: {
-      nombre: "Asféricas, k = -2.33",
-      nota: "La constante cónica que anula la aberración de tercer orden para este objeto (notebook 02).",
+      titulo: "Asférica, k = -2.33",
+      nota: "La constante cónica que anula la aberración de tercer orden para este objeto, calculada con la teoría de Seidel: los rayos del abanico cruzan casi en el mismo punto.",
       n: 1.5, P: [0, -30], conica: { ...BASE, k1: -2.33, k2: -2.33 }, alfas: [7, -7],
     },
     fuera: {
-      nombre: "Objeto fuera del eje",
-      nota: "El segundo punto objeto del notebook 01, P = (-1, -30), con rayos a 0° y 4°.",
+      titulo: "Objeto fuera del eje",
+      nota: "El segundo punto objeto del ejemplo resuelto, P = (-1, -30), con rayos a 0° y 4°. La gráfica de abajo deja de ser simétrica: es la coma.",
       n: 1.5, P: [-1, -30], conica: { ...BASE, k1: -1, k2: -1 }, alfas: [0, 4],
     },
     virtual: {
-      nombre: "Objeto dentro del foco",
+      titulo: "Imagen virtual",
       nota: "P está más cerca que el foco F: los rayos salen separándose y sus prolongaciones se cruzan detrás del objeto.",
       n: 1.5, P: [0, -7], conica: { ...BASE, k1: -1, k2: -1 }, alfas: [8, -8],
     },
     total: {
-      nombre: "Índice alto: reflexión total",
+      titulo: "Reflexión total",
       nota: "Con n = 2.4, como el diamante, los rayos muy inclinados no salen por la cara f: se reflejan dentro del vidrio.",
       n: 2.4, P: [0, -8], conica: { R1: 6, R2: 6, d: 2, k1: 0, k2: 0 }, alfas: [19, -8],
     },
     formula: {
-      nombre: "Fórmula libre (polinómica)",
-      nota: "Así se especifican las asféricas: una parábola más términos en x^4. Con x^4/6000 se anula la aberración de tercer orden; en el borde queda un resto pequeño de orden superior.",
+      titulo: "Fórmula libre",
+      nota: "Así se especifican las asféricas: una parábola más términos en x^4. Con x^4/6000 se anula la aberración de tercer orden y en el borde queda un resto pequeño. Las fórmulas están en la pestaña Lente.",
       n: 1.5, P: [0, -30], formula: { g: "-1 + x^2/20 - x^4/6000", f: "1 - x^2/20 + x^4/6000", a: "" }, alfas: [7, -7],
+      pestana: "lente",
     },
   };
 
@@ -164,6 +165,11 @@
 
   // ------------------------------------------------------------------ escena
   let escena = null;
+  let yaMovido = false; // la pista "arrástrame" se ve hasta que P se mueve por primera vez
+
+  function marcarMovido() {
+    yaMovido = true;
+  }
 
   function limpio(tr) {
     return tr.estado === "ok" && tr.detalles.length === 2 && !tr.detalles[0].total && !tr.detalles[1].total &&
@@ -545,6 +551,11 @@
     if (im.punto && !visible(im.punto)) s += indicador(im.punto, T, nombreImagen);
     else if (!im.punto && par && !visible(par)) s += indicador(par, T, "imagen paraxial");
     const p = T.aP(esc.P);
+    if (!yaMovido) {
+      // En vertical la leyenda ocupa la esquina de la derecha: la pista va junto a la etiqueta P.
+      s += `<circle class="pulso" cx="${f1(p[0])}" cy="${f1(p[1])}" r="13"/>` +
+        (vertical ? etiqueta("arrástrame", p, -1, "etiqueta pista", 38) : texto("arrástrame", Math.max(p[0], 42), p[1] - 24, "etiqueta pista"));
+    }
     s += `<circle class="asa-p" cx="${f1(p[0])}" cy="${f1(p[1])}" r="13"/>` +
       `<circle class="marca-p" cx="${f1(p[0])}" cy="${f1(p[1])}" r="5.5"/>` + etiqueta("P", p, -1, "etiqueta", 21);
     return s;
@@ -574,7 +585,7 @@
     const eje = recortar([0, caja.y0], [0, caja.y1], caja);
     if (eje) out.push(`<path class="eje-optico" d="${linea(T.aP(eje[0]), T.aP(eje[1]))}"/>`);
     out.push(regla(T, esc));
-    out.push(`<path class="vidrio" d="${contorno(esc.lente, T)}"/>`);
+    out.push(`<path class="lente-dibujo" d="${contorno(esc.lente, T)}"/>`);
     out.push(rotulosCaras(esc.lente, T));
     if (esc.abanico.length) out.push(grupoRayos("abanico", esc.abanico.map((r) => r.tr), T, caja));
     if (esc.imagen.tipo === "virtual") {
@@ -649,7 +660,8 @@
       s += `<circle class="pt-principal" cx="${f1(X(p.dy))}" cy="${f1(Y(p.h))}" r="4.2"/>` +
         texto(String(p.cual), X(p.dy) + (X(p.dy) > w - m.r - 20 ? -11 : 11), Y(p.h), "etiqueta rayo");
     }
-    s += texto("Δy: dónde cruza el rayo, medido desde la imagen paraxial", m.l + (w - m.l - m.r) / 2, h - 9, "grafica-titulo");
+    const tituloX = w < 460 ? "Δy: dónde cruza, desde la paraxial" : "Δy: dónde cruza el rayo, medido desde la imagen paraxial";
+    s += texto(tituloX, m.l + (w - m.l - m.r) / 2, h - 9, "grafica-titulo");
     s += `<text class="grafica-titulo" transform="translate(14 ${f1(m.t + (h - m.t - m.b) / 2)}) rotate(-90)" text-anchor="middle" dominant-baseline="central">h, altura en la cara g</text>`;
     svg.innerHTML = s;
   }
@@ -740,6 +752,14 @@
   const CONTROLES = {};
   const textoControl = (v, d) => String(Number(v.toFixed(d)));
 
+  // Tramo recorrido del deslizador (la variable --p la usa estilo.css).
+  function pintar(rango) {
+    const min = Number(rango.min);
+    const max = Number(rango.max);
+    const p = max > min ? (100 * (Number(rango.value) - min)) / (max - min) : 0;
+    rango.style.setProperty("--p", limitar(p, 0, 100).toFixed(2) + "%");
+  }
+
   function enlazar(id, decimales, alCambiar) {
     const rango = $(id);
     const numero = $(id + "-n");
@@ -747,6 +767,7 @@
     rango.addEventListener("input", () => {
       const v = Number(rango.value);
       numero.value = textoControl(v, decimales);
+      pintar(rango);
       alCambiar(v);
     });
     numero.addEventListener("change", () => {
@@ -758,6 +779,7 @@
       v = limitar(v, Number(rango.min), Number(rango.max));
       numero.value = textoControl(v, decimales);
       rango.value = v;
+      pintar(rango);
       alCambiar(v);
     });
   }
@@ -766,6 +788,7 @@
   function poner(id, v, forzar = false) {
     const c = CONTROLES[id];
     c.rango.value = v;
+    pintar(c.rango);
     if (forzar || document.activeElement !== c.numero) c.numero.value = textoControl(v, c.decimales);
   }
 
@@ -773,6 +796,7 @@
     const c = CONTROLES[id];
     c.rango.min = min;
     c.rango.max = max;
+    pintar(c.rango);
   }
 
   function fraccion(alfa) {
@@ -801,7 +825,11 @@
   }
 
   function escribirControles() {
-    $("caso").value = estado.caso;
+    for (const b of chips.querySelectorAll("[data-caso]")) {
+      const activo = b.dataset.caso === estado.caso;
+      b.setAttribute("aria-pressed", String(activo));
+      if (activo) mostrarChip(b);
+    }
     poner("n", estado.n, true);
     for (const k of ["R1", "R2", "k1", "k2", "d"]) poner(k, estado.conica[k], true);
     poner("abanico", estado.abanico, true);
@@ -813,8 +841,8 @@
 
   function actualizarPanel() {
     mostrarError();
-    $("k1-tipo").textContent = "· " + tipoConica(estado.conica.k1);
-    $("k2-tipo").textContent = "· " + tipoConica(estado.conica.k2);
+    $("k1-tipo").textContent = "(" + tipoConica(estado.conica.k1) + ")";
+    $("k2-tipo").textContent = "(" + tipoConica(estado.conica.k2) + ")";
     if (!escena) return;
     const esc = escena;
     const a = esc.lente.semiapertura;
@@ -828,12 +856,12 @@
       rangoDe(id, grados(esc.amin), grados(esc.amax));
       poner(id, grados(r.alfa));
       const u = r.tr.direcciones[0];
-      const entra = r.tr.puntos.length > 1 ? ` · entra en x = ${num(r.tr.puntos[1][0])}` : " · no toca la lente";
+      const entra = r.tr.puntos.length > 1 ? `; entra en x = ${num(r.tr.puntos[1][0])}` : "; no toca la lente";
       $(id + "-nota").textContent = `û${i ? "₂" : "₁"} = ${vector(u)}${entra}`;
     });
     let nota = `Focal efectiva ${num(esc.focal)}`;
-    if (Number.isFinite(esc.F)) nota += ` · F en y = ${num(esc.F, 2)} · F′ en y = ${num(esc.Fp, 2)}`;
-    $("nota-lente").textContent = nota + ` · semiapertura ${num(a, 2)}`;
+    if (Number.isFinite(esc.F)) nota += `, F en y = ${num(esc.F, 2)}, F′ en y = ${num(esc.Fp, 2)}`;
+    $("nota-lente").textContent = nota + `, semiapertura ${num(a, 2)}.`;
     actualizarLecturas(esc);
     actualizarEstados(esc);
     actualizarTabla(esc);
@@ -841,6 +869,47 @@
     $("grafica-nota").textContent = Math.abs(esc.P[0]) < 1e-9
       ? "Cada punto es un rayo: la altura h a la que entra en la lente y dónde cruza el eje, medido desde la imagen paraxial. Sin aberración todos caerían en Δy = 0. Con caras esféricas los rayos que entran lejos del eje enfocan antes."
       : "Con P fuera del eje se mide dónde cruza cada rayo al rayo central, el que llega al centro de la cara g. La curva deja de ser simétrica: es la coma, otra aberración que aparece fuera del eje.";
+  }
+
+  // ------------------------------------------------- experimentos y pestanas
+  const chips = $("experimentos");
+  const pestanas = Array.from(document.querySelectorAll('#controles [role="tab"]'));
+
+  // En el celular los experimentos se desplazan de lado: el elegido queda a la vista.
+  function mostrarChip(b) {
+    const rc = chips.getBoundingClientRect();
+    const rb = b.getBoundingClientRect();
+    if (rb.left < rc.left || rb.right > rc.right) chips.scrollLeft += rb.left - rc.left - 14;
+  }
+
+  function abrirPestana(tab, enfocar) {
+    for (const t of pestanas) {
+      const activa = t === tab;
+      t.setAttribute("aria-selected", String(activa));
+      t.tabIndex = activa ? 0 : -1;
+      $(t.getAttribute("aria-controls")).hidden = !activa;
+    }
+    if (enfocar) tab.focus();
+  }
+
+  // El experimento queda en la direccion (#esferica, #total...) para compartirlo.
+  function casoDeDireccion() {
+    let h = "";
+    try {
+      h = decodeURIComponent(window.location.hash.slice(1));
+    } catch (e) {
+      return null;
+    }
+    return Object.prototype.hasOwnProperty.call(CASOS, h) ? h : null;
+  }
+
+  function guardarEnDireccion(clave) {
+    try {
+      const base = window.location.pathname + window.location.search;
+      window.history.replaceState(null, "", clave === "parabolica" ? base : base + "#" + clave);
+    } catch (e) {
+      // en algunos marcos (iframe) no se puede cambiar la direccion
+    }
   }
 
   function aplicarCaso(clave) {
@@ -865,6 +934,7 @@
     }
     escribirControles();
     $("nota-caso").textContent = c.nota;
+    if (c.pestana) abrirPestana($("tab-" + c.pestana), false);
     cambio();
   }
 
@@ -931,6 +1001,7 @@
   lienzo.addEventListener("pointerdown", (e) => {
     if (!cercaDeP(posicion(e.clientX, e.clientY), e.pointerType !== "mouse")) return;
     arrastre = e.pointerId;
+    marcarMovido();
     congelada = true;
     vistaObjetivo = { ...vistaActual };
     lienzo.setPointerCapture(e.pointerId);
@@ -964,14 +1035,32 @@
   lienzo.addEventListener("pointerup", soltar);
   lienzo.addEventListener("pointercancel", soltar);
 
+  // Con la figura seleccionada, las flechas mueven P en la direccion que se ve en pantalla
+  // (en horizontal la derecha es +y, hacia la lente; en vertical, arriba es +y).
+  lienzo.addEventListener("keydown", (e) => {
+    const flechas = { ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+    const d = flechas[e.key];
+    if (!d || !escena || e.altKey || e.ctrlKey || e.metaKey) return;
+    e.preventDefault();
+    const largo = e.shiftKey ? 5 : 1;
+    const dx = 0.1 * largo * (vertical ? d[0] : -d[1]);
+    const dy = 0.5 * largo * (vertical ? -d[1] : d[0]);
+    const xm = Number(CONTROLES.xP.rango.max);
+    const x = limitar(estado.P[0] + dx, -xm, xm);
+    const y = limitar(estado.P[1] + dy, -90, escena.lente.ymin - 0.25);
+    estado.P = [Math.round(x * 100) / 100, Math.round(y * 100) / 100];
+    marcarMovido();
+    cambio();
+  });
+
   // En pantallas tactiles, un toque sobre P no debe desplazar la pagina.
   lienzo.addEventListener("touchstart", (e) => {
     if (e.touches.length === 1 && cercaDeP(posicion(e.touches[0].clientX, e.touches[0].clientY), true)) e.preventDefault();
   }, { passive: false });
 
   // ------------------------------------------------------------------ inicio
-  enlazar("xP", 2, (v) => { estado.P[0] = v; cambio(); });
-  enlazar("yP", 2, (v) => { estado.P[1] = v; cambio(); });
+  enlazar("xP", 2, (v) => { estado.P[0] = v; marcarMovido(); cambio(); });
+  enlazar("yP", 2, (v) => { estado.P[1] = v; marcarMovido(); cambio(); });
   enlazar("n", 4, (v) => { estado.n = v; cambio(); });
   for (const k of ["R1", "R2", "k1", "k2", "d"]) {
     enlazar(k, k[0] === "k" ? 3 : 2, (v) => { estado.conica[k] = v; cambio(); });
@@ -1003,10 +1092,29 @@
     });
   }
 
-  const selector = $("caso");
-  selector.innerHTML = Object.entries(CASOS).map(([k, c]) => `<option value="${k}">${escapar(c.nombre)}</option>`).join("");
-  selector.addEventListener("change", () => aplicarCaso(selector.value));
-  $("restablecer").addEventListener("click", () => aplicarCaso(selector.value));
+  chips.innerHTML = Object.entries(CASOS).map(([k, c]) =>
+    `<button type="button" class="chip" data-caso="${k}" aria-pressed="false">${escapar(c.titulo)}</button>`).join("");
+  chips.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-caso]");
+    if (!b) return;
+    aplicarCaso(b.dataset.caso);
+    guardarEnDireccion(b.dataset.caso);
+  });
+  $("restablecer").addEventListener("click", () => aplicarCaso(estado.caso));
+  for (const t of pestanas) {
+    t.addEventListener("click", () => abrirPestana(t, false));
+    t.addEventListener("keydown", (e) => {
+      const i = pestanas.indexOf(t);
+      const j = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: pestanas.length - 1 }[e.key];
+      if (j === undefined) return;
+      e.preventDefault();
+      abrirPestana(pestanas[(j + pestanas.length) % pestanas.length], true);
+    });
+  }
+  window.addEventListener("hashchange", () => {
+    const c = casoDeDireccion();
+    if (c && c !== estado.caso) aplicarCaso(c);
+  });
   $("vista-todo").addEventListener("click", () => ponerVista("todo"));
   $("vista-imagen").addEventListener("click", () => ponerVista("imagen"));
   $("controles").addEventListener("submit", (e) => e.preventDefault());
@@ -1016,5 +1124,5 @@
     new ResizeObserver(() => { if (escena) dibujarGrafica(escena); }).observe($("grafica"));
   }
   medir();
-  aplicarCaso("parabolica");
+  aplicarCaso(casoDeDireccion() || "parabolica");
 })();
