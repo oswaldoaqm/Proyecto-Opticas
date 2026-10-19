@@ -4,7 +4,8 @@ Proyecto del Grupo 1, Optica & Ondas (UTEC, 2026-2).
 Se importan aparte: ``lentes.graficos`` y ``lentes.estilo`` (figuras),
 ``lentes.a_mano`` (ejemplo resuelto con un metodo independiente),
 ``lentes.aberraciones`` (aberracion medida con el trazado), ``lentes.seidel``
-(teoria de tercer orden) y ``lentes.simulacion`` (la escena del notebook 03).
+(teoria de tercer orden), ``lentes.difraccion`` (frente de onda y limite de
+difraccion) y ``lentes.simulacion`` (la escena del notebook 03).
 """
 from .lente import Lente, lente_biconvexa, lente_con_forma
 from .paraxial import (

@@ -26,7 +26,7 @@ Cada fila es un requisito del enunciado. Se actualiza con cada avance. No hay r�
 | E3 | Simulación funcional | Página web y notebook 03 ([simulacion.md](simulacion.md)); fig05 lleva el QR al póster | listo |
 | E4 | Trazado de rayos para al menos dos puntos objeto | Notebook 01: $P_1 = (0, -30)$ en el eje y $P_2 = (-1, -30)$ fuera del eje | listo |
 | E5 | Comparación con la aproximación paraxial | fig02 y [análisis](aberraciones.md), sección 2 | listo |
-| E6 | Discusión física de las aberraciones observadas | fig03, fig04 y [análisis](aberraciones.md), secciones 3 y 4 · falta llevarla al póster | listo |
+| E6 | Discusión física de las aberraciones observadas | fig03, fig04, fig06 y [análisis](aberraciones.md), secciones 3 a 5 · falta llevarla al póster | listo |
 
 ## Rúbrica interna
 

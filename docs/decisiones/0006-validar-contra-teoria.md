@@ -29,6 +29,8 @@ Cada pieza del código se compara con un resultado conocido mediante pruebas aut
 | La cónica que anula $S_I$ deja una aberración que crece como $h^4$ | Aporte de las caras cónicas |
 | La página web traza los mismos rayos que el paquete Python, punto por punto, en 10 casos | La simulación en JavaScript ([decisión 0007](0007-simulacion-web-en-javascript.md)) |
 | La escena del notebook 03 da la misma imagen que el método a mano | La simulación en Python |
+| Frente de onda por camino óptico (Fermat): el coeficiente de $h^4$ es $S_I/8$ en cuatro lentes, sin término $h^2$ en la imagen paraxial | Camino óptico frente a Seidel |
+| Menor $W_\text{rms}$ a mitad de camino entre los focos y igual a 1/4 del paraxial; patrón de Airy con el primer cero en $0.61\lambda/\mathrm{NA}$; Strehl exacto y aproximación de Maréchal a menos de 0.005 cerca del límite | Difracción |
 
 ## Consecuencias
 - Si un cambio rompe la física, una prueba falla antes de que el error llegue al póster.

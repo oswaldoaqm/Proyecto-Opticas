@@ -2,6 +2,18 @@
 
 Registro corto de avances, del más reciente al más antiguo.
 
+## 2026-10-18 (página con vidrio)
+- Nuevo diseño de la página web: paneles de vidrio esmerilado sobre la cáustica de la lente con caras esféricas, calculada con el mismo trazador ([`simulacion.md`](simulacion.md)). La figura y los datos van sobre superficies casi opacas; con "reducir transparencia" los paneles son opacos.
+- Experimentos con nombre y una nota de qué mirar, controles en pestañas, pista para arrastrar $P$, flechas del teclado para moverlo y enlaces a cada experimento (`#esferica`, `#total`...).
+- Fórmulas del método en MathML. Sin errores de accesibilidad automáticos (axe) en escritorio, celular y 320 px, en modo claro y oscuro. Mover $P$ sigue tomando unos 17 ms por cuadro, como antes del cambio.
+
+## 2026-10-18 (frente de onda)
+- Extra 5 ([`aberraciones.md`](aberraciones.md), sección 5, fig06 y [notebook 04](../notebooks/04_frente_de_onda.ipynb)): error del frente de onda por camino óptico (principio de Fermat) y límite de difracción, con longitudes en mm y $\lambda = 550$ nm.
+- El coeficiente de $h^4$ del frente de onda coincide con $S_I/8$ de Seidel en cuatro lentes (diferencias de $10^{-6}$): tercer método independiente para la misma aberración.
+- El menor $W_\text{rms}$ está a mitad de camino entre el foco paraxial y el marginal y vale 1/4 del paraxial, como dice la teoría.
+- Con el criterio de Maréchal ($W_\text{rms} \le \lambda/14$), la parábola está limitada por difracción hasta 2.7 mm de diámetro (f/5.7), la esfera hasta 2.3 mm y la asférica hasta 8.2 mm (f/2). El criterio coincide con la apertura donde la mancha geométrica iguala al disco de Airy.
+- `lentes.difraccion` y 12 pruebas nuevas (Strehl exacto frente a Maréchal, patrón de Airy, escalas $h^4$, $h^3$ y $1/h$). 131 pruebas en total.
+
 ## 2026-10-18 (CI)
 - El CI se quedó colgado en Linux al ejecutar el notebook 03. Al reproducirlo, la ejecución con nbconvert se colgaba en casi la mitad de las corridas: el panel escribía en un widget Output con `with salida:` y el ejecutor se quedaba esperando una respuesta del kernel que ya había llegado. El panel ahora escribe la figura y el texto con `append_display_data` y `append_stdout`: 0 cuelgues en 20 corridas, y los controles funcionan igual en Jupyter.
 - El CI corta una celda que pase de 2 minutos y el trabajo completo a los 20 minutos, para que un cuelgue no dure horas.

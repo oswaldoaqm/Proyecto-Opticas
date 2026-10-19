@@ -547,6 +547,140 @@ def qr_simulador():
     return fig
 
 
+@figura("fig06_frente_de_onda_difraccion")
+def frente_de_onda_difraccion():
+    """Extra 5: error del frente de onda (Fermat) y cuando la lente esta limitada por difraccion."""
+    from matplotlib.colors import LinearSegmentedColormap, PowerNorm
+    from matplotlib.ticker import NullFormatter
+
+    from lentes.difraccion import (
+        LAMBDA_VERDE,
+        MARECHAL,
+        apertura_cruce,
+        apertura_limite,
+        haz,
+        mejor_foco_onda,
+        psf,
+        radio_airy,
+        radio_rms_geometrico,
+        strehl,
+    )
+
+    lam, y_obj = LAMBDA_VERDE, -30.0
+    k_cero = k_que_anula(lente_biconvexa(10, 10, 2.0, 1.5, 0.0, 0.0), y_obj)
+    casos = (("esfera", 0.0, NARANJA), ("parábola", -1.0, AZUL), ("asférica", k_cero, AQUA))
+    haces = [(nombre, haz(lente_biconvexa(10, 10, 2.0, 1.5, k, k), y_obj), color) for nombre, k, color in casos]
+    parab = haces[1][1]
+    h_tope = min(hz.h_tope for _, hz, _ in haces)
+    hl = np.geomspace(0.15, h_tope, 50)
+    numero = FuncFormatter(lambda v, _: f"{v:g}")
+
+    def ejes_log(ax, yticks):
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_xlim(hl[0], hl[-1])
+        ax.set_xticks([0.2, 0.5, 1, 2, 4])
+        ax.set_yticks(yticks)
+        for eje in (ax.xaxis, ax.yaxis):
+            eje.set_major_formatter(numero)
+            eje.set_minor_formatter(NullFormatter())
+        ax.set_xlabel("h_max: radio de la apertura (mm)")
+        ax.grid(True, which="major", color=REJILLA, lw=0.6)
+
+    fig = plt.figure(figsize=(11, 8.6))
+    gs = fig.add_gridspec(2, 2, hspace=0.5, wspace=0.27, left=0.07, right=0.97, top=0.9, bottom=0.07)
+    axa, axb, axc = fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1]), fig.add_subplot(gs[1, 0])
+    sub = gs[1, 1].subgridspec(1, 3, wspace=0.08)
+    axd = [fig.add_subplot(sub[0, i]) for i in range(3)]
+
+    # (a) W(rho) de la parabola con h_max = 2: referencia en la imagen paraxial y en el mejor foco
+    h_a = 2.0
+    foco = mejor_foco_onda(parab, h_a)
+    rho = np.linspace(0, 1, 301)
+    W_par = parab.frente_de_onda(rho * h_a, foco.y_paraxial) / lam
+    W_mej = parab.frente_de_onda(rho * h_a, foco.y_ref) / lam
+    axa.axhline(0, color=EJE, lw=0.8, zorder=1)
+    axa.plot(rho, W_par, color=AZUL, lw=1.5, ls=(0, (4, 3)), zorder=3)
+    axa.plot(rho, W_mej, color=AZUL, lw=2.2, zorder=3)
+    i = 255
+    axa.annotate(f"referencia en la imagen paraxial\nW_rms = {foco.rms_paraxial / lam:.2f} λ", (rho[i], W_par[i]),
+                 xytext=(-10, 0), textcoords="offset points", ha="right", va="center", color=TINTA_2, fontsize=8.5)
+    j = int(np.argmin(W_mej))
+    axa.annotate(f"referencia en el mejor foco\nW_rms = {foco.rms / lam:.2f} λ", (rho[j], W_mej[j]),
+                 xytext=(0, -8), textcoords="offset points", ha="center", va="top", color=TINTA_2, fontsize=8.5)
+    axa.set_xlim(0, 1.0)
+    axa.set_ylim(-2.2, 5.0)
+    axa.set_xlabel("ρ = h / h_max (posición en la pupila)")
+    axa.set_ylabel("W (longitudes de onda)")
+    axa.set_title(f"(a) Error del frente de onda: parábola, h_max = {h_a:g} mm", loc="left", fontsize=10)
+    axa.grid(True, color=REJILLA, lw=0.6)
+
+    # (b) W_rms en el mejor foco segun la apertura, con el limite de Marechal
+    axb.axhline(MARECHAL, color=TENUE, lw=1.0, ls=(0, (4, 3)), zorder=1)
+    axb.annotate("límite de Maréchal: λ/14 (Strehl 0.8)", (hl[0], MARECHAL), xytext=(4, -4),
+                 textcoords="offset points", ha="left", va="top", color=TINTA_2, fontsize=8.5)
+    for (nombre, hz, color), (dx, dy, ha, va) in zip(haces, ((-8, 6, "right", "bottom"), (8, -6, "left", "top"),
+                                                            (-8, 6, "right", "bottom"))):
+        s = np.array([mejor_foco_onda(hz, h).rms / lam for h in hl])
+        axb.plot(hl, s, color=color, lw=2.2, zorder=3)
+        h_lim = apertura_limite(hz)
+        axb.plot(h_lim, MARECHAL, "o", color=color, ms=7, mec=SUPERFICIE, mew=1.5, zorder=4)
+        axb.annotate(f"{nombre}: {h_lim:.2f} mm", (h_lim, MARECHAL), xytext=(dx, dy), textcoords="offset points",
+                     ha=ha, va=va, color=TINTA_2, fontsize=8.5)
+    axb.annotate("~ h⁴", (0.62, mejor_foco_onda(parab, 0.62).rms / lam), xytext=(6, -10), textcoords="offset points",
+                 color=TINTA_2, fontsize=9)
+    axb.annotate("~ h⁶", (2.0, mejor_foco_onda(haces[2][1], 2.0).rms / lam), xytext=(6, -10),
+                 textcoords="offset points", color=TINTA_2, fontsize=9)
+    ejes_log(axb, [1e-4, 1e-3, 1e-2, 0.1, 1, 10])
+    axb.set_ylim(1e-4, 30)
+    axb.set_ylabel("W_rms en el mejor foco (longitudes de onda)")
+    axb.set_title("(b) ¿Hasta qué apertura manda la difracción?", loc="left", fontsize=10)
+
+    # (c) mancha geometrica frente al disco de Airy
+    airy = np.array([radio_airy(parab, h) * 1e3 for h in hl])
+    axc.plot(hl, airy, color=TINTA_2, lw=1.6, ls=(0, (4, 3)), zorder=3)
+    axc.annotate("disco de Airy: 0.61 λ / NA", (hl[4], airy[4]), xytext=(2, 6), textcoords="offset points",
+                 ha="left", va="bottom", color=TINTA_2, fontsize=8.5)
+    for nombre, hz, color in haces:
+        geo = np.array([radio_rms_geometrico(hz, h) * 1e3 for h in hl])
+        axc.plot(hl, geo, color=color, lw=2.2, zorder=3)
+        h_c = apertura_cruce(hz)
+        axc.plot(h_c, radio_airy(hz, h_c) * 1e3, "o", color=color, ms=7, mec=SUPERFICIE, mew=1.5, zorder=4)
+        k = min(int(np.searchsorted(geo, 40 if nombre != "asférica" else 0.12)), len(hl) - 1)
+        arriba = nombre != "parábola"
+        axc.annotate(nombre, (hl[k], geo[k]), xytext=(-6, 3) if arriba else (6, -3), textcoords="offset points",
+                     ha="right" if arriba else "left", va="bottom" if arriba else "top", color=TINTA_2, fontsize=8.5)
+    ejes_log(axc, [0.1, 1, 10, 100])
+    axc.set_ylim(0.05, 600)
+    axc.set_ylabel("radio de la mancha (μm)")
+    axc.set_title("(c) Mancha geométrica (~ h³) frente al disco de Airy (~ 1/h)", loc="left", fontsize=10)
+
+    # (d) imagen de un punto en el mejor foco de la parabola, para tres aperturas
+    mapa = LinearSegmentedColormap.from_list("intensidad", [SUPERFICIE, "#86b6ef", "#3987e5", "#1c5cab", "#104281"])
+    lado = 16.0  # um
+    xs = np.linspace(-lado, lado, 241)
+    X, Y = np.meshgrid(xs, xs)
+    radios = np.linspace(0, lado * np.sqrt(2), 600)
+    for ax, h in zip(axd, (0.8, apertura_limite(parab), 2.0)):
+        f = mejor_foco_onda(parab, h)
+        perfil = psf(parab, h, f.y_ref, radios * 1e-3)
+        imagen = np.interp(np.hypot(X, Y), radios, perfil)
+        ax.imshow(imagen / imagen.max(), extent=(-lado, lado, -lado, lado), origin="lower", cmap=mapa,
+                  norm=PowerNorm(gamma=0.5, vmin=0, vmax=1), interpolation="bilinear")
+        ax.add_patch(plt.Circle((0, 0), radio_airy(parab, h) * 1e3, fill=False, ec=TINTA_2, lw=0.8, ls=(0, (2, 2))))
+        ax.set_title(f"h = {h:.2f} mm\nStrehl {strehl(parab, h, f.y_ref):.2f}", fontsize=9, color=TINTA)
+        ax.set_xticks([-10, 0, 10])
+        ax.set_yticks([])
+        ax.tick_params(labelsize=8)
+    axd[1].set_xlabel("μm  (círculo: radio de Airy)", fontsize=8.5)
+    axd[0].annotate("(d) Imagen de un punto en el mejor foco (parábola)", (0, 1), xycoords="axes fraction",
+                    xytext=(0, 34), textcoords="offset points", ha="left", va="bottom", fontsize=10, color=TINTA)
+
+    fig.suptitle("Extra 5 - frente de onda y límite de difracción (λ = 550 nm, longitudes en mm, objeto en y = -30)",
+                 x=0.03, ha="left", fontsize=11.5, color=TINTA, y=0.985)
+    return fig
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Regenera las figuras del proyecto en figuras/.")
     parser.add_argument("nombres", nargs="*", help="figuras a generar (por defecto, todas)")
