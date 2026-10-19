@@ -13,7 +13,7 @@ La actividad 6 pide una simulación que permita variar $P$, $n_L$, $f(x)$, $g(x)
 - El notebook 03 tiene los mismos controles con ipywidgets, sobre el paquete Python (`lentes.simulacion`).
 
 ## Consecuencias
-- La página pesa unos 80 kB sin contar las fuentes y funciona sin conexión abriendo `web/index.html`.
+- La página pesa unos 105 kB sin contar las fuentes (32 kB comprimida) y funciona sin conexión abriendo `web/index.html`.
 - Hay dos implementaciones de la física y la prueba automática evita que se separen: un cambio en `src/lentes/trazado.py` que no se repita en `web/trazado.js` hace fallar el CI.
 - La web deriva numéricamente las caras escritas como fórmula (Python lo hace con sympy). Las diferencias son del orden de $10^{-8}$, muy por debajo de lo que se ve.
 

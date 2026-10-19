@@ -11,7 +11,7 @@ La simulación traza rayos por la lente con el método vectorial y muestra los r
 
 | Lo que pide el enunciado | Control |
 |---|---|
-| Punto objeto $P = (x_P, y_P)$ | Deslizadores de $x_P$ e $y_P$. En la web también se arrastra $P$ en la figura. |
+| Punto objeto $P = (x_P, y_P)$ | Deslizadores de $x_P$ e $y_P$. En la web también se arrastra $P$ en la figura, o se mueve con las flechas del teclado cuando la figura está seleccionada. |
 | Índice $n_L$ | De 1 a 2.5. En la web se puede escribir el valor exacto, por ejemplo 1.5168. |
 | Caras $g(x)$ y $f(x)$ | Cónicas (radio de vértice $R$ y constante cónica $k$ de cada cara, y espesor $d$) o cualquier fórmula en $x$. |
 | Direcciones $\hat u_i$ | Ángulos $\alpha_1$ y $\alpha_2$ de los rayos 1 y 2, con $\hat u = (\sin\alpha, \cos\alpha)$, y un abanico de hasta 41 rayos repartidos sobre la lente. |
@@ -27,17 +27,31 @@ La simulación traza rayos por la lente con el método vectorial y muestra los r
 
 En el celular el eje óptico va vertical, como en el enunciado; en pantallas anchas la luz va de izquierda a derecha, como en las figuras.
 
-## Casos de ejemplo de la web
+## Experimentos de la web
 
-| Caso | Qué se ve |
+Cada experimento carga una lente, un punto objeto y dos rayos, y una nota dice qué mirar.
+
+| Experimento | Qué se ve |
 |---|---|
-| Caras parabólicas (ejemplo) | El ejemplo resuelto del notebook 01: imagen en $y = 16.029$, paraxial en $16.187$. |
+| Lente del ejemplo | El ejemplo resuelto del notebook 01: imagen en $y = 16.029$, paraxial en $16.187$. |
 | Caras esféricas | La misma imagen paraxial, pero con rayos a $\pm 7^\circ$ la imagen se adelanta 3.72 unidades. |
-| Asféricas, $k = -2.33$ | La cónica que anula el tercer orden: con los mismos rayos la diferencia baja a 0.02. |
+| Asférica, $k = -2.33$ | La cónica que anula el tercer orden: con los mismos rayos la diferencia baja a 0.02. |
 | Objeto fuera del eje | $P = (-1, -30)$ con los rayos C y D del notebook 01: imagen en $(0.530,\ 15.987)$. |
-| Objeto dentro del foco | Imagen virtual detrás del objeto. |
-| Índice alto: reflexión total | Con $n_L = 2.4$ el rayo 1 se refleja dentro de la lente. |
-| Fórmula libre (polinómica) | Caras escritas como fórmula: una parábola más un término en $x^4$, como se especifican las asféricas. |
+| Imagen virtual | Objeto dentro del foco: la imagen queda detrás del objeto. |
+| Reflexión total | Con $n_L = 2.4$ el rayo 1 se refleja dentro de la lente. |
+| Fórmula libre | Caras escritas como fórmula: una parábola más un término en $x^4$, como se especifican las asféricas. |
+
+El experimento elegido queda en la dirección de la página, por ejemplo <https://oswaldoaqm.github.io/Proyecto-Opticas/#esferica>, así que se puede compartir un enlace que abre directo en ese experimento. Las claves son `esferica`, `asferica`, `fuera`, `virtual`, `total` y `formula`; sin clave se abre el ejemplo.
+
+## Cómo está hecha la página
+
+- **Vidrio sobre luz.** Los paneles son de vidrio esmerilado (`backdrop-filter`) y el fondo es la cáustica de la lente de trabajo con caras esféricas iluminada por un haz paralelo, calculada con el mismo `trazado.js` ([`web/fondo.js`](../web/fondo.js)).
+- **El vidrio es solo el marco.** La figura, las lecturas y las tablas van sobre superficies casi opacas para que se lean igual con cualquier fondo detrás. El texto tiene contraste de al menos 4.5:1 (WCAG AA) y los colores de los rayos son los de las figuras del proyecto.
+- **Rendimiento.** El marco de la figura no desenfoca el fondo: mientras se arrastra $P$ la figura cambia en cada cuadro y el navegador repetiría el desenfoque cada vez (en las pruebas con Chromium sin aceleración gráfica, 30 ms por cuadro en lugar de 17).
+- **Preferencias del sistema.** Con "reducir transparencia", o en navegadores sin `backdrop-filter`, los paneles son opacos; con "reducir movimiento" no hay animaciones. Safari todavía no informa la preferencia de transparencia ([Chrome for Developers](https://developer.chrome.com/blog/css-prefers-reduced-transparency)).
+- **Uso.** Los controles están en tres pestañas (Objeto P, Lente, Rayos). Al abrir la página, una pista sobre $P$ indica que se puede arrastrar y desaparece cuando se mueve por primera vez.
+
+Las pautas de contraste y de desenfoque siguen a [Axess Lab](https://axesslab.com/?p=5111) y [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter).
 
 ## Cómo sabemos que la página calcula bien
 
