@@ -1,4 +1,4 @@
-"""Las figuras se guardan igual cada vez y en cualquier sistema (decision 0005)."""
+"""Las figuras se guardan igual cada vez en la misma maquina, con saltos LF en cualquier sistema (decision 0005)."""
 import matplotlib
 
 matplotlib.use("Agg")
