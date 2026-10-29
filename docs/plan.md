@@ -1,7 +1,7 @@
 # Plan de trabajo (tres semanas)
 
 **Entrega:** sin fecha exacta todavía; planificamos con tres semanas desde el 18 de octubre.  
-**Formato del póster:** los profesores lo confirman la semana del 19 de octubre.  
+**Formato del póster:** A0; usamos la plantilla horizontal de UTEC que compartieron los profesores ([decisión 0008](decisiones/0008-poster-en-html-a-tamano-real.md)).  
 **Rúbrica:** no hay una oficial; usamos la matriz de cumplimiento y la rúbrica interna de [`enunciado.md`](enunciado.md).  
 **Meta:** cumplir el enunciado al 100 % y un trabajo que un investigador revise y encuentre riguroso.
 
@@ -9,6 +9,7 @@
 - Semana 1: deducción ([`deduccion.md`](deduccion.md)) y ejemplo resuelto ([notebook 01](../notebooks/01_ejemplo_resuelto.ipynb)). Listo.
 - Semana 2: comparación paraxial y aberraciones ([`aberraciones.md`](aberraciones.md), fig02 a fig04) con los extras 1 a 3, y la simulación interactiva (A6, [`simulacion.md`](simulacion.md)): página web con código QR (extra 6) y notebook 03. Listo.
 - Extras 4 y 5: abanico de rayos, cáustica y círculo de mínima confusión (fig03), y frente de onda y límite de difracción ([`aberraciones.md`](aberraciones.md), sección 5, fig06 y [notebook 04](../notebooks/04_frente_de_onda.ipynb)). Listo.
+- Semana 3: auditoría y correcciones; primer borrador del póster en [`poster/`](../poster/). Falta la revisión del grupo, la prueba impresa y el ensayo de la defensa.
 
 ## Hitos
 

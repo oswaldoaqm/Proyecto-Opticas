@@ -2,6 +2,20 @@
 
 Registro corto de avances, del más reciente al más antiguo.
 
+## 2026-10-29 (póster en Windows)
+- En Windows las figuras del póster salían con un recuadro en lugar del subíndice de $k_0$: Arial no tiene ese carácter y matplotlib no buscaba otra fuente. Ahora DejaVu Sans es la fuente de respaldo, y el CI falla si a una figura del póster le falta un carácter.
+
+## 2026-10-25 (auditoría y póster)
+- Auditoría del proyecto, con las preguntas probables del jurado. Se corrigieron los hallazgos que tocaban el repositorio; ninguno cambió una conclusión.
+- Trazador: un rayo que entraba a menos de 0.03 % del borde (0.1 % en la web) cruzaba la lente sin refractarse. Ahora se muestrea solo el tramo del rayo dentro de la apertura. Pruebas con rayos a entre $10^{-3}$ y $10^{-9}$ de la semiapertura del borde, en Python y en la web.
+- Mejor foco: se buscaba solo entre el foco paraxial y el del borde, y con aberración zonal el mejor plano puede quedar afuera. Ahora se busca entre el primer y el último cruce de los rayos. No cambió ningún número publicado, pero sí la mejor cónica que había calculado la auditoría (-2.349). El círculo de mínima confusión ahora incluye el rayo del borde: con pupila chica da 0.750, como la teoría.
+- Cónica: $k_0 = -2.33$ anula el tercer orden, pero con la pupila completa la de menor error de frente de onda es $k = -2.345$, ocho veces menos. Para seguir limitada por difracción, $k$ tiene que estar a menos de 0.85 % de ese valor.
+- Paraxial: planos principales de la lente gruesa (a $\pm 0.310$ del centro); con ellos y la focal efectiva, $1/s + 1/s' = 1/f$ da la imagen exacta. Lo que falla es el modelo delgado. Criterio físico para la actividad 4: con mm y luz verde, la imagen en el plano paraxial está limitada por difracción hasta $h = 0.95$ (caras parabólicas), cerca del umbral de 1 %.
+- Pruebas más exigentes: Seidel con caras hiperbólicas, Maréchal en el límite y la web con las 601 muestras de la página y con el experimento de la fórmula libre. 168 pruebas.
+- Figuras: la barra del círculo de mínima confusión se ve entera (fig03), la imagen de un punto va en una escala común con barra de color (fig06), la normal usada en negro (fig01) y rótulos sin jerga.
+- Página: la fórmula libre lleva el término en $x^6$; el experimento se desmarca al cambiar la lente; con $P$ en el foco la imagen paraxial aparece "en el infinito".
+- Póster: primer borrador A0 horizontal sobre la plantilla de UTEC ([`poster/`](../poster/), [decisión 0008](decisiones/0008-poster-en-html-a-tamano-real.md), propuesta). Límites y trabajo futuro en el [README](../README.md).
+
 ## 2026-10-18 (página con vidrio)
 - Nuevo diseño de la página web: paneles de vidrio esmerilado sobre la cáustica de la lente con caras esféricas, calculada con el mismo trazador ([`simulacion.md`](simulacion.md)). La figura y los datos van sobre superficies casi opacas; con "reducir transparencia" los paneles son opacos.
 - Experimentos con nombre y una nota de qué mirar, controles en pestañas, pista para arrastrar $P$, flechas del teclado para moverlo y enlaces a cada experimento (`#esferica`, `#total`...).
@@ -9,9 +23,9 @@ Registro corto de avances, del más reciente al más antiguo.
 
 ## 2026-10-18 (frente de onda)
 - Extra 5 ([`aberraciones.md`](aberraciones.md), sección 5, fig06 y [notebook 04](../notebooks/04_frente_de_onda.ipynb)): error del frente de onda por camino óptico (principio de Fermat) y límite de difracción, con longitudes en mm y $\lambda = 550$ nm.
-- El coeficiente de $h^4$ del frente de onda coincide con $S_I/8$ de Seidel en cuatro lentes (diferencias de $10^{-6}$): tercer método independiente para la misma aberración.
+- El coeficiente de $h^4$ del frente de onda coincide con $S_I/8$ de Seidel en cuatro lentes (diferencias de $10^{-6}$): un tercer cálculo de la misma aberración.
 - El menor $W_\text{rms}$ está a mitad de camino entre el foco paraxial y el marginal y vale 1/4 del paraxial, como dice la teoría.
-- Con el criterio de Maréchal ($W_\text{rms} \le \lambda/14$), la parábola está limitada por difracción hasta 2.7 mm de diámetro (f/5.7), la esfera hasta 2.3 mm y la asférica hasta 8.2 mm (f/2). El criterio coincide con la apertura donde la mancha geométrica iguala al disco de Airy.
+- Con el criterio de Maréchal ($W_\text{rms} \le \lambda/14$), la parábola está limitada por difracción hasta 2.7 mm de diámetro (número f de trabajo 5.7, con el objeto en $y = -30$), la esfera hasta 2.3 mm y la asférica hasta 8.2 mm (número f de trabajo 2). El criterio coincide con la apertura donde la mancha geométrica iguala al disco de Airy.
 - `lentes.difraccion` y 12 pruebas nuevas (Strehl exacto frente a Maréchal, patrón de Airy, escalas $h^4$, $h^3$ y $1/h$). 131 pruebas en total.
 
 ## 2026-10-18 (CI)
@@ -45,5 +59,5 @@ Registro corto de avances, del más reciente al más antiguo.
 - Estructura del repositorio, entorno fijado (Python 3.12) y CI en Linux y Windows.
 - Núcleo de trazado vectorial (`src/lentes`): caras cónicas o por fórmula, Snell vectorial con reflexión total, trazado completo, imagen por cruce de rayos, predicción paraxial (matrices ABCD) y de lente delgada.
 - 63 pruebas automáticas contra límites analíticos ([decisión 0006](decisiones/0006-validar-contra-teoria.md)).
-- Boceto (fig00 y notebook 00) con $R = 10$, espesor 2, $n_L = 1.5$ y objeto a 30 unidades: la paraxial de lente gruesa pone la imagen en $y = 16.19$ y la de lente delgada en $y = 15.00$ (la diferencia se debe solo al espesor); el rayo marginal cruza el eje en $y = 13.7$. La aberración crece como $h^2$: $\Delta y \approx -0.154\,h^2$ con caras parabólicas y $-0.269\,h^2$ con caras esféricas.
+- Boceto (fig00 y notebook 00) con $R = 10$, espesor 2, $n_L = 1.5$ y objeto a 30 unidades: la paraxial de lente gruesa pone la imagen en $y = 16.19$ y la de lente delgada en $y = 15.00$ (la diferencia se debe solo al espesor); el rayo marginal cruza el eje en $y = 13.7$. La aberración crece como $h^2$: $\Delta y \approx -0.153\,h^2$ con caras parabólicas y $-0.269\,h^2$ con caras esféricas.
 - Decisiones 0001 a 0006.
