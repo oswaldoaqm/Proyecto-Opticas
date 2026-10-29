@@ -145,7 +145,7 @@ def limites(esc: Escena) -> tuple[tuple[float, float], tuple[float, float]]:
 
 def dibujar_escena(ax, esc: Escena, girar: bool = True) -> None:
     """Dibuja la escena: rayos incidentes en azul, dentro del vidrio en naranja y
-    emergentes en aqua; los rayos 1 y 2 mas gruesos que el abanico. Con ``girar``
+    emergentes en verde azulado; los rayos 1 y 2 mas gruesos que el abanico. Con ``girar``
     la luz va de izquierda a derecha, como en las figuras del proyecto."""
     (y0, y1), (x0, x1) = limites(esc)
     largo = 3 * ((y1 - y0) + (x1 - x0))

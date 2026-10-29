@@ -1,7 +1,7 @@
 """Estilo comun de todas las figuras del proyecto (decision 0005).
 
-Paleta categorica validada para daltonismo (orden fijo: azul, naranja, aqua,
-amarillo) y una rampa azul de un solo tono para magnitudes ordenadas.
+Paleta categorica validada para daltonismo (orden fijo: azul, naranja, verde
+azulado, amarillo) y una rampa azul de un solo tono para magnitudes ordenadas.
 """
 from __future__ import annotations
 
