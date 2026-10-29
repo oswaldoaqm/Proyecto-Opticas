@@ -11,6 +11,7 @@ Cada decisión que cambia el modelo, las convenciones o la forma de trabajar que
 | [0005](0005-figuras-solo-por-codigo.md) | Las figuras solo se generan con código | aceptada |
 | [0006](0006-validar-contra-teoria.md) | Todo resultado se valida contra un límite analítico | aceptada |
 | [0007](0007-simulacion-web-en-javascript.md) | La simulación web es el trazador traducido a JavaScript y se valida contra Python | aceptada |
+| [0008](0008-poster-en-html-a-tamano-real.md) | El póster es una página HTML a tamaño real sobre la plantilla de UTEC | propuesta |
 
 ## Plantilla para una decisión nueva
 
