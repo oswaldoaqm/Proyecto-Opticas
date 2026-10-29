@@ -30,7 +30,7 @@ def test_la_exacta_coincide_con_la_numerica_en_las_dos_caras(k):
         P = np.array([rng.uniform(-3, 3), rng.uniform(-40, -5)])
         u = rayo_hacia(lente, P, rng.uniform(-0.95, 0.95) * lente.semiapertura)
         # cara de entrada g, desde el aire
-        lam_n = interseccion(P, u, lente.abajo, lente.semiapertura, 1e-9, 200.0, muestras=20001)
+        lam_n = interseccion(P, u, lente.abajo, lente.semiapertura, 1e-9, 200.0)  # muestras de uso normal
         lam_e = interseccion_exacta(P, u, lente.abajo, lente.semiapertura)
         assert lam_n is not None and lam_e is not None
         assert np.isclose(lam_n, lam_e, rtol=0, atol=1e-9)
