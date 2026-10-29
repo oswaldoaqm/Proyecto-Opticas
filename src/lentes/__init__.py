@@ -17,6 +17,7 @@ from .paraxial import (
     matriz_refraccion,
     matriz_sistema,
     matriz_traslacion,
+    planos_principales,
 )
 from .superficies import Superficie, conica, desde_expresion, esferica, parabolica
 from .trazado import (
@@ -64,6 +65,7 @@ __all__ = [
     "matriz_sistema",
     "matriz_traslacion",
     "parabolica",
+    "planos_principales",
     "raices_cuadratica",
     "rayo_hacia",
     "refractar",

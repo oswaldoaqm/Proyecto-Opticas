@@ -17,6 +17,8 @@ CASOS = [
     (20, 7, 2.5, 0.3, -35.0),
     (10, 10, 2.0, 0.0, None),
     (15, 9, 2.0, -1.0, None),
+    (10, 10, 2.0, -1.5, -30.0),  # caras hiperbolicas, todavia subcorregida
+    (10, 10, 2.0, -3.0, -30.0),  # caras hiperbolicas, sobrecorregida: el borde enfoca despues
 ]
 
 
@@ -25,8 +27,10 @@ def test_seidel_predice_el_coeficiente_del_trazado(R1, R2, espesor, k, y_objeto)
     lente = lente_biconvexa(R1, R2, espesor, 1.5, k, k)
     medido = coeficiente_esferica_trazado(lente, y_objeto)
     teoria = coeficiente_esferica(lente, y_objeto)
-    assert medido < 0  # lente convergente: los rayos alejados del eje enfocan antes
-    assert np.isclose(medido, teoria, rtol=1e-6)
+    if k >= -1:
+        assert medido < 0  # caras esfericas, elipticas o parabolicas: el borde enfoca antes
+    assert np.sign(medido) == np.sign(teoria)
+    assert np.isclose(medido, teoria, rtol=1e-7)
 
 
 def test_la_conica_que_anula_deja_solo_el_quinto_orden():

@@ -292,17 +292,31 @@
     return hi <= lo ? null : [lo, hi];
   }
 
+  // Solo se muestrea el tramo del rayo dentro de la apertura (|x| <= semiapertura): asi el
+  // ultimo punto cae justo en el borde y no se pierde un impacto muy cerca de el.
   function interseccion(P, u, sup, semiapertura, lamMin, lamMax, muestras = 2001) {
-    const H = (L) => P[1] + L * u[1] - sup.s(P[0] + L * u[0]);
+    let lo = lamMin;
+    let hi = lamMax;
+    if (Math.abs(u[0]) < 1e-15) {
+      if (Math.abs(P[0]) > semiapertura) return null;
+    } else {
+      const t1 = (-semiapertura - P[0]) / u[0];
+      const t2 = (semiapertura - P[0]) / u[0];
+      lo = Math.max(lo, Math.min(t1, t2));
+      hi = Math.min(hi, Math.max(t1, t2));
+    }
+    if (!(hi > lo)) return null;
+    // el redondeo puede dejar el extremo una fraccion de ulp fuera del borde
+    const xDe = (L) => Math.min(semiapertura, Math.max(-semiapertura, P[0] + L * u[0]));
+    const H = (L) => P[1] + L * u[1] - sup.s(xDe(L));
     let Lprev = null;
     let hprev = NaN;
     for (let i = 0; i < muestras; i++) {
-      const L = lamMin + ((lamMax - lamMin) * i) / (muestras - 1);
-      const x = P[0] + L * u[0];
-      const h = Math.abs(x) <= semiapertura ? H(L) : NaN;
+      const L = lo + ((hi - lo) * i) / (muestras - 1);
+      const h = H(L);
       if (Number.isFinite(h) && Number.isFinite(hprev) && hprev * h <= 0) {
         if (hprev === 0) {
-          if (i - 1 > 0) return Lprev;
+          if (i - 1 > 0 || Lprev > lamMin) return Lprev;
         } else if (h === 0) {
           return L;
         } else {

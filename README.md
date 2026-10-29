@@ -85,9 +85,23 @@ pip install -e .
 - Paraxial frente a vectorial y aberración esférica: [`docs/aberraciones.md`](docs/aberraciones.md)
 - Frente de onda y límite de difracción (extra 5): [`docs/aberraciones.md`](docs/aberraciones.md), sección 5, y [`notebooks/04_frente_de_onda.ipynb`](notebooks/04_frente_de_onda.ipynb)
 - Simulación interactiva: [`docs/simulacion.md`](docs/simulacion.md), [página web](https://oswaldoaqm.github.io/Proyecto-Opticas/) y [`notebooks/03_simulacion.ipynb`](notebooks/03_simulacion.ipynb)
+- Póster A0 sobre la plantilla de UTEC (borrador): [`poster/`](poster/)
 - Qué pide el curso y qué está cubierto: [`docs/enunciado.md`](docs/enunciado.md)
 - Plan y extras: [`docs/plan.md`](docs/plan.md)
 - Avances: [`docs/bitacora.md`](docs/bitacora.md)
+
+## Límites y trabajo futuro
+
+Lo que el modelo deja afuera a propósito, y cómo seguiría el proyecto:
+
+| Límite | Cómo seguir |
+|---|---|
+| Rayos en el plano del dibujo (meridionales): fuera del eje se obtiene la imagen tangencial | Trazar en 3D, con rayos fuera del plano. La ley de Snell vectorial ya vale en 3D; daría el astigmatismo, la curvatura de campo y la coma completa. |
+| Luz de un solo color | El índice como función de la longitud de onda (ecuación de Sellmeier de un vidrio real, por ejemplo BK7): aberración cromática y un doblete acromático. |
+| Sin pérdidas por reflexión | Coeficientes de Fresnel en cada cara, para pesar cada rayo con la energía que transmite. |
+| Caras $y = f(x)$, borde de espesor cero y diafragma en la cara $g$ | Caras paramétricas, un borde con espesor y el diafragma en otra posición. |
+| Validación contra teoría, no contra un experimento | Una prueba de Hartmann: un láser, una lupa y una máscara con agujeros a distintas alturas; medir dónde cruza cada haz y compararlo con la curva $\Delta y(h)$. Y la misma lente en un programa profesional de diseño óptico. |
+| Difracción escalar, objeto puntual; longitudes en mm solo en el extra 5 | Difracción vectorial para aperturas grandes y una escena con objetos extendidos. |
 
 ## Equipo
 

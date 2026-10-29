@@ -9,6 +9,7 @@ from lentes import (
     imagen_de_dos_rayos,
     imagen_paraxial,
     interseccion,
+    interseccion_exacta,
     lente_biconvexa,
     parabolica,
     rayo_hacia,
@@ -51,8 +52,23 @@ def test_rayo_sobre_el_eje_no_se_desvia(lente):
 
 
 def test_cerca_del_eje_coincide_con_la_imagen_paraxial(lente):
+    # a h = 0.001 la aberracion esferica mueve el cruce unos 3e-7: la tolerancia esta en esa escala
     y_par = imagen_paraxial(lente, P_EJE).y
-    assert abs(cruce(lente, P_EJE, 0.02) - y_par) < 1e-3
+    assert abs(cruce(lente, P_EJE, 0.001) - y_par) < 5e-7
+
+
+@pytest.mark.parametrize("fraccion", [1e-3, 1e-4, 1e-6, 1e-9])
+@pytest.mark.parametrize("P", [(0.0, -30.0), (-8.0, -6.0), (3.0, -12.0)])
+def test_un_rayo_que_entra_junto_al_borde_se_refracta(lente, P, fraccion):
+    """Un rayo dirigido a una fraccion minima del borde de la cara g debe refractarse alli
+    (antes, la busqueda del impacto lo perdia y el rayo cruzaba la lente sin desviarse)."""
+    a = lente.semiapertura
+    for signo in (1, -1):
+        u = rayo_hacia(lente, P, signo * a * (1 - fraccion))
+        tr = trazar(lente, P, u)
+        lam = interseccion_exacta(P, u, lente.abajo, a)
+        assert tr.caras[:1] == ["g"]
+        assert np.allclose(tr.puntos[1], np.asarray(P) + lam * u, atol=1e-9)
 
 
 def test_aberracion_esferica_crece_como_h_al_cuadrado(lente):

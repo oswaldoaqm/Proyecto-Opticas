@@ -42,6 +42,19 @@ def foco_imagen(lente: Lente) -> float:
     return np.inf if C == 0 else lente.arriba.y_vertice - A / C
 
 
+def planos_principales(lente: Lente) -> tuple[float, float]:
+    """Posiciones (y) de los planos principales H (lado del objeto) y H' (lado de la imagen).
+
+    Con s medida desde H hasta el objeto y s' desde H' hasta la imagen, la ecuacion de Gauss
+    1/s + 1/s' = 1/f, con la focal efectiva f, da la imagen paraxial de la lente gruesa sin
+    aproximar nada mas: el espesor queda en f y en la posicion de los planos.
+    """
+    A, B, C, D = matriz_sistema(lente).ravel()
+    if C == 0:
+        raise ValueError("una lente sin potencia no tiene planos principales")
+    return lente.abajo.y_vertice + (D - 1.0) / C, lente.arriba.y_vertice + (1.0 - A) / C
+
+
 @dataclass(frozen=True)
 class ImagenParaxial:
     y: float          # posicion de la imagen sobre el eje

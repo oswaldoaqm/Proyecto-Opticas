@@ -9,7 +9,7 @@ El enunciado describe las caras de la lente como $y = f(x)$ e $y = g(x)$, de con
 ## Decisión
 - Eje óptico: la recta $x = 0$ (eje $y$). La luz viaja en $+y$ y el objeto $P$ está debajo de la lente.
 - $g(x)$ es la cara de abajo, cóncava hacia arriba: es la **primera** que toca la luz. $f(x)$ es la de arriba, cóncava hacia abajo: es la **segunda**.
-- La lente está centrada en el origen, con vértices en $y = -e/2$ (cara $g$) e $y = +e/2$ (cara $f$), donde $e$ es el espesor sobre el eje.
+- La lente está centrada en el origen, con vértices en $y = -d/2$ (cara $g$) e $y = +d/2$ (cara $f$), donde $d$ es el espesor sobre el eje.
 - Radio de vértice con signo: $R = 1/s''(0)$. Con la luz en $+y$ coincide con la convención de la óptica paraxial ($R > 0$ si el centro de curvatura está del lado de salida). En una biconvexa, $R_g > 0$ y $R_f < 0$.
 - Longitudes en unidades arbitrarias (pueden leerse como mm); índice del aire igual a 1.
 
