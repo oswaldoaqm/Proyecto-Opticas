@@ -22,6 +22,7 @@ abanico de rayos de un plano da el frente de onda en toda la pupila circular.
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import numpy as np
@@ -29,7 +30,7 @@ from scipy.interpolate import CubicSpline
 from scipy.optimize import brentq, minimize_scalar
 from scipy.special import j0
 
-from .aberraciones import rayo_a_altura, y_paraxial
+from .aberraciones import rayo_a_altura, tramo_de_cruces, y_paraxial
 from .lente import Lente
 from .trazado import Trayectoria, trazar
 
@@ -91,6 +92,13 @@ class Haz:
         (qx, qy), (ex, ey) = self.salida(h), self.direccion(h)
         return float(qy - qx * ey / ex)
 
+    def tramo_de_foco(self, h_max: float, m: int = 400) -> tuple[float, float]:
+        """Tramo del eje donde cruzan los rayos de una pupila de radio h_max (y el paraxial):
+        ahi esta el mejor plano (lentes.aberraciones.tramo_de_cruces)."""
+        h = h_max * np.arange(1, m + 1) / m
+        (qx, qy), (ex, ey) = self.salida(h).T, self.direccion(h).T
+        return tramo_de_cruces(np.append(qy - qx * ey / ex, y_paraxial(self.lente, self.y_objeto)))
+
     def seno_salida(self, h) -> np.ndarray:
         """Seno del angulo del rayo emergente con el eje optico."""
         return np.abs(self.direccion(np.asarray(h, dtype=float))[..., 0])
@@ -150,12 +158,9 @@ def mejor_foco_onda(hz: Haz, h_max: float, m: int = 400) -> FocoOnda:
         return rms(hz.frente_de_onda(h, y_ref), pesos)
 
     y_par = y_paraxial(hz.lente, hz.y_objeto)
-    y_marg = hz.cruce_con_eje(h_max)
-    lo, hi = min(y_par, y_marg), max(y_par, y_marg)
-    margen = 0.1 * (hi - lo) + 1e-12
-    r = minimize_scalar(sigma, bounds=(lo - margen, hi + margen), method="bounded",
+    r = minimize_scalar(sigma, bounds=hz.tramo_de_foco(h_max), method="bounded",
                         options={"xatol": 1e-12, "maxiter": 500})
-    return FocoOnda(h_max, y_par, y_marg, float(r.x), float(r.fun), sigma(y_par))
+    return FocoOnda(h_max, y_par, hz.cruce_con_eje(h_max), float(r.x), float(r.fun), sigma(y_par))
 
 
 def _muestras(hz: Haz, h_max: float, y_ref: float, lam: float, m_min: int = 400):
@@ -219,20 +224,22 @@ def radio_rms_geometrico(hz: Haz, h_max: float, m: int = 400) -> float:
         x = Q[:, 0] + (y - Q[:, 1]) * e[:, 0] / e[:, 1]
         return float(np.sqrt(np.sum(pesos * x**2)))
 
-    y_par = y_paraxial(hz.lente, hz.y_objeto)
-    y_marg = hz.cruce_con_eje(h_max)
-    lo, hi = min(y_par, y_marg), max(y_par, y_marg)
-    margen = 0.1 * (hi - lo) + 1e-12
-    r = minimize_scalar(radio, bounds=(lo - margen, hi + margen), method="bounded",
+    r = minimize_scalar(radio, bounds=hz.tramo_de_foco(h_max), method="bounded",
                         options={"xatol": 1e-12, "maxiter": 500})
     return float(r.fun)
 
 
-def apertura_limite(hz: Haz, lam: float = LAMBDA_VERDE, criterio: float = MARECHAL) -> float:
-    """Mayor h_max con W_rms <= criterio * lambda en el mejor foco (Marechal: lambda / 14).
-    Si toda la lente cumple, devuelve h_tope."""
+def apertura_limite(hz: Haz, lam: float = LAMBDA_VERDE, criterio: float = MARECHAL,
+                    plano: str = "mejor") -> float:
+    """Mayor h_max con W_rms <= criterio * lambda (Marechal: lambda / 14), en el plano de
+    menor W_rms (plano="mejor") o en la imagen paraxial (plano="paraxial"). Si toda la lente
+    cumple, devuelve h_tope."""
+    if plano not in ("mejor", "paraxial"):
+        raise ValueError('plano tiene que ser "mejor" o "paraxial"')
+
     def exceso(h):
-        return mejor_foco_onda(hz, h).rms / lam - criterio
+        f = mejor_foco_onda(hz, h)
+        return (f.rms if plano == "mejor" else f.rms_paraxial) / lam - criterio
 
     h_lo = 1e-3 * hz.h_tope
     if exceso(hz.h_tope) <= 0:
@@ -247,3 +254,24 @@ def apertura_cruce(hz: Haz, lam: float = LAMBDA_VERDE) -> float:
         return np.log(radio_rms_geometrico(hz, h) / radio_airy(hz, h, lam))
 
     return float(brentq(diferencia, 1e-2 * hz.h_tope, hz.h_tope, xtol=1e-9))
+
+
+def conica_optima(construir: Callable[[float], Lente], y_objeto: float | None, h_max: float,
+                  cerca_de: float, ancho: float = 0.1) -> tuple[float, float]:
+    """Constante conica k con el menor W_rms en el mejor foco, para una pupila de radio h_max.
+
+    construir(k) arma la lente con esa constante conica (por ejemplo, la misma en las dos
+    caras) y la busqueda va de cerca_de - ancho a cerca_de + ancho. Conviene partir del k
+    que anula el tercer orden (lentes.seidel.k_que_anula): ese k deja solo los terminos de
+    orden superior del frente de onda (h^6, h^8...). Con una pupila grande rinde mas dejar
+    un poco de tercer orden de signo contrario, que los compense en parte, y por eso el
+    optimo se aparta del k de tercer orden a medida que crece h_max.
+
+    Devuelve (k, W_rms en mm).
+    """
+    def sigma(k):
+        return mejor_foco_onda(haz(construir(k), y_objeto, h_tope=h_max), h_max).rms
+
+    r = minimize_scalar(sigma, bounds=(cerca_de - ancho, cerca_de + ancho), method="bounded",
+                        options={"xatol": 1e-6})
+    return float(r.x), float(r.fun)

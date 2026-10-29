@@ -11,16 +11,18 @@ from lentes.difraccion import (
     apertura_cruce,
     apertura_limite,
     camino_optico,
+    conica_optima,
     haz,
     intensidad,
     mejor_foco_onda,
     pupila,
     radio_airy,
     radio_rms_geometrico,
+    rms,
     strehl,
     strehl_marechal,
 )
-from lentes.seidel import suma_seidel
+from lentes.seidel import k_que_anula, suma_seidel
 
 LAM = LAMBDA_VERDE
 # (R1, R2, espesor, k, y_objeto); None = objeto en el infinito
@@ -81,7 +83,8 @@ def test_patron_de_airy_de_una_lente_perfecta():
 
 
 def test_strehl_exacto_coincide_con_marechal_si_la_aberracion_es_chica(parabolica):
-    for h_max in (0.8, 1.0, 1.2):
+    # hasta la apertura limite incluida (Strehl ~ 0.8)
+    for h_max in (0.8, 1.0, 1.2, apertura_limite(parabolica)):
         f = mejor_foco_onda(parabolica, h_max)
         assert abs(strehl(parabolica, h_max, f.y_ref) - strehl_marechal(f.rms / LAM)) < 0.005
 
@@ -106,10 +109,47 @@ def test_los_dos_criterios_de_difraccion_coinciden(parabolica):
     assert np.isclose(strehl(parabolica, h_marechal, f.y_ref), 0.8, atol=0.03)
 
 
+def test_en_el_plano_paraxial_la_apertura_limite_es_menor(parabolica):
+    """En el plano paraxial el W_rms es 4 veces el del mejor foco (tercer orden) y crece como h^4:
+    la apertura limite ahi es 4^(-1/4) = 0.707 veces la del mejor foco."""
+    paraxial = apertura_limite(parabolica, plano="paraxial")
+    mejor = apertura_limite(parabolica)
+    assert np.isclose(paraxial / mejor, 4 ** -0.25, rtol=0.01)
+
+
 def test_la_conica_que_anula_el_tercer_orden_amplia_la_apertura_limite():
     esferica = haz(lente_biconvexa(10, 10, 2.0, 1.5, 0.0, 0.0), -30.0)
     asferica = haz(lente_biconvexa(10, 10, 2.0, 1.5, -2.33, -2.33), -30.0)
     assert apertura_limite(asferica) > 3 * apertura_limite(esferica)
+
+
+def test_mejor_foco_de_onda_con_aberracion_zonal():
+    """Como en test_aberraciones: con aberracion zonal el plano de menor W_rms queda fuera
+    del tramo entre el foco paraxial y el del borde, y tiene que coincidir con un barrido fino."""
+    hz = haz(lente_biconvexa(10, 10, 2.0, 1.5, -2.3444, -2.3444), -30.0)
+    h_max = 3.9
+    f = mejor_foco_onda(hz, h_max)
+    assert f.y_ref > max(f.y_paraxial, f.y_marginal)
+    rho, pesos = pupila(400)
+    ys = np.linspace(f.y_paraxial - 0.03, f.y_paraxial + 0.03, 3001)
+    assert f.rms <= min(rms(hz.frente_de_onda(rho * h_max, y), pesos) for y in ys) * (1 + 1e-9)
+
+
+def test_la_mejor_conica_compensa_el_quinto_orden():
+    """El k que anula el tercer orden no es el de menor W_rms con la pupila completa: rinde
+    mas dejar un poco de tercer orden que compense el quinto. Con una pupila mas chica el
+    optimo se acerca al de tercer orden."""
+    def construir(k):
+        return lente_biconvexa(10, 10, 2.0, 1.5, k, k)
+
+    k0 = k_que_anula(construir(0.0), -30.0)
+    k, w = conica_optima(construir, -30.0, 3.9, cerca_de=k0)
+    w0 = mejor_foco_onda(haz(construir(k0), -30.0, h_tope=3.9), 3.9).rms
+    assert k < k0 and w < w0 / 5
+    for dk in (-0.003, 0.003):  # es un minimo
+        assert mejor_foco_onda(haz(construir(k + dk), -30.0, h_tope=3.9), 3.9).rms > w
+    k_chica, _ = conica_optima(construir, -30.0, 2.0, cerca_de=k0)
+    assert abs(k_chica - k0) < 0.5 * abs(k - k0)
 
 
 def test_un_haz_que_no_atraviesa_la_lente_avisa():
