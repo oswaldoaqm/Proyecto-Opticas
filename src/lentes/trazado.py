@@ -92,32 +92,49 @@ def _rango_en_caja(P, u, xmin, xmax, ymin, ymax) -> tuple[float, float] | None:
     return lo, hi
 
 
+def _tramo_en_la_apertura(P, u, semiapertura: float, lam_min: float, lam_max: float) -> tuple[float, float] | None:
+    """Parte de [lam_min, lam_max] en la que el rayo cumple |x| <= semiapertura."""
+    if abs(u[0]) < 1e-15:
+        return (lam_min, lam_max) if abs(P[0]) <= semiapertura else None
+    t1, t2 = (-semiapertura - P[0]) / u[0], (semiapertura - P[0]) / u[0]
+    lo, hi = max(lam_min, min(t1, t2)), min(lam_max, max(t1, t2))
+    return (lo, hi) if hi > lo else None
+
+
 def interseccion(P, u, sup: Superficie, semiapertura: float, lam_min: float, lam_max: float,
                  muestras: int = 2001) -> float | None:
     """Menor lambda en [lam_min, lam_max] con  P_y + lambda u_y = s(P_x + lambda u_x)  y |x| <= semiapertura.
 
     Se muestrea h(lambda) = y(lambda) - s(x(lambda)) para encontrar el primer cambio de
     signo y se refina con el metodo de Brent. Funciona para cualquier cara suave.
+    Solo se muestrea el tramo del rayo dentro de la apertura: asi el ultimo punto cae
+    justo en el borde y no se pierde un impacto muy cerca de el.
     """
     P = np.asarray(P, dtype=float)
     u = np.asarray(u, dtype=float)
-    lam = np.linspace(lam_min, lam_max, muestras)
-    x = P[0] + lam * u[0]
+    tramo = _tramo_en_la_apertura(P, u, semiapertura, lam_min, lam_max)
+    if tramo is None:
+        return None
+
+    def x_de(L):
+        # el redondeo puede dejar el extremo una fraccion de ulp fuera del borde
+        return np.clip(P[0] + L * u[0], -semiapertura, semiapertura)
+
+    lam = np.linspace(tramo[0], tramo[1], muestras)
     with np.errstate(invalid="ignore"):
-        h = P[1] + lam * u[1] - sup(x)
-    h = np.where(np.abs(x) <= semiapertura, h, np.nan)
+        h = P[1] + lam * u[1] - sup(x_de(lam))
     valido = np.isfinite(h)
     candidatos = np.nonzero(valido[:-1] & valido[1:] & (h[:-1] * h[1:] <= 0))[0]
     for i in candidatos:
         if h[i] == 0.0:
-            if i == 0:
+            if i == 0 and lam[0] <= lam_min:
                 continue  # es el punto de partida, no un impacto nuevo
             return float(lam[i])
         if h[i + 1] == 0.0:
             return float(lam[i + 1])
 
         def H(L):
-            return P[1] + L * u[1] - float(sup(P[0] + L * u[0]))
+            return P[1] + L * u[1] - float(sup(x_de(L)))
 
         return float(brentq(H, lam[i], lam[i + 1], xtol=1e-14, rtol=1e-14))
     return None
