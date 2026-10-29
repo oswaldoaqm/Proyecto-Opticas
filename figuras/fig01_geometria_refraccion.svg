@@ -1261,13 +1261,13 @@ z
    </g>
    <g id="patch_14">
     <path d="M 186.161538 182.736 
-Q 146.824762 170.934967 109.843927 159.840717 
-" style="fill: none; stroke: #eb6834; stroke-width: 2.2; stroke-linecap: round"/>
-    <path d="M 113.426198 163.212265 
-L 109.843927 159.840717 
-L 114.690528 158.99783 
+Q 146.824762 170.934967 110.058104 159.90497 
+" style="fill: none; stroke: #0b0b0b; stroke-width: 2.4; stroke-linecap: round"/>
+    <path d="M 113.640374 163.276518 
+L 110.058104 159.90497 
+L 114.904705 159.062082 
 z
-" style="fill: #eb6834; stroke: #eb6834; stroke-width: 2.2; stroke-linecap: round"/>
+" style="fill: #0b0b0b; stroke: #0b0b0b; stroke-width: 2.4; stroke-linecap: round"/>
    </g>
    <g id="text_2">
     <!-- $\theta_i$ = 22.5° -->
@@ -1701,7 +1701,7 @@ z
 " style="fill: #fcfcfb; opacity: 0.9"/>
     </g>
     <!-- normal usada -->
-    <g style="fill: #eb6834" transform="translate(41.760979 153.233877) scale(0.085 -0.085)">
+    <g style="fill: #0b0b0b" transform="translate(41.760979 153.233877) scale(0.085 -0.085)">
      <defs>
       <path id="DejaVuSans-50" d="M 3328 2828 
 Q 3544 3216 3844 3400 
@@ -1779,7 +1779,7 @@ z
      <use xlink:href="#DejaVuSans-44" transform="translate(622.40625 0)"/>
     </g>
     <!-- ($\hat n \cdot \hat u &lt; 0$) -->
-    <g style="fill: #eb6834" transform="translate(60.604417 164.882529) scale(0.085 -0.085)">
+    <g style="fill: #0b0b0b" transform="translate(60.604417 164.882529) scale(0.085 -0.085)">
      <defs>
       <path id="DejaVuSans-d4f" d="M 684 2619 
 L 1344 2619 
@@ -2979,13 +2979,13 @@ z
    </g>
    <g id="patch_32">
     <path d="M 572.718462 182.736 
-Q 533.341792 194.40323 496.323454 205.371692 
-" style="fill: none; stroke: #eb6834; stroke-width: 2.2; stroke-linecap: round"/>
-    <path d="M 501.167161 206.231052 
-L 496.323454 205.371692 
-L 499.917166 202.012342 
+Q 533.341792 194.40323 496.537848 205.308168 
+" style="fill: none; stroke: #0b0b0b; stroke-width: 2.4; stroke-linecap: round"/>
+    <path d="M 501.381555 206.167527 
+L 496.537848 205.308168 
+L 500.131559 201.948818 
 z
-" style="fill: #eb6834; stroke: #eb6834; stroke-width: 2.2; stroke-linecap: round"/>
+" style="fill: #0b0b0b; stroke: #0b0b0b; stroke-width: 2.4; stroke-linecap: round"/>
    </g>
    <g id="text_10">
     <!-- $\theta_i$ = 18.4° -->
@@ -3120,7 +3120,7 @@ z
 " style="fill: #fcfcfb; opacity: 0.9"/>
     </g>
     <!-- normal usada -->
-    <g style="fill: #eb6834" transform="translate(428.230395 204.712648) scale(0.085 -0.085)">
+    <g style="fill: #0b0b0b" transform="translate(428.230395 204.712648) scale(0.085 -0.085)">
      <use xlink:href="#DejaVuSans-51"/>
      <use xlink:href="#DejaVuSans-52" transform="translate(63.375 0)"/>
      <use xlink:href="#DejaVuSans-55" transform="translate(124.5625 0)"/>
@@ -3135,7 +3135,7 @@ z
      <use xlink:href="#DejaVuSans-44" transform="translate(622.40625 0)"/>
     </g>
     <!-- ($\hat n \cdot \hat u &lt; 0$) -->
-    <g style="fill: #eb6834" transform="translate(447.073833 216.361301) scale(0.085 -0.085)">
+    <g style="fill: #0b0b0b" transform="translate(447.073833 216.361301) scale(0.085 -0.085)">
      <use xlink:href="#DejaVuSans-b" transform="translate(0 0.515625)"/>
      <use xlink:href="#DejaVuSans-2b3" transform="translate(96.861328 13.015625)"/>
      <use xlink:href="#DejaVuSans-Oblique-51" transform="translate(39.013672 0.515625)"/>

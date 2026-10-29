@@ -54,6 +54,7 @@ from lentes.estilo import (  # noqa: E402
     color_por_altura,
     guardar_figura,
 )
+from lentes.difraccion import apertura_limite, haz  # noqa: E402
 from lentes.graficos import dibujar_lente, dibujar_trayectoria  # noqa: E402
 from lentes.seidel import coeficiente_esferica, k_que_anula  # noqa: E402
 
@@ -236,7 +237,7 @@ def geometria_refraccion():
 
         _flecha(ax, Q, largo_vector * t_hat, TINTA_2, lw=1.4)
         _flecha(ax, Q, largo_vector * n_enunciado, TENUE, lw=1.4)
-        _flecha(ax, Q, largo_vector * n_usada, NARANJA, lw=2.2, z=7)
+        _flecha(ax, Q, largo_vector * n_usada, TINTA, lw=2.4, z=7)
         _arco(ax, Q, n_usada, -u_in, 0.36, TINTA, f"$\\theta_i$ = {np.degrees(det.theta_i):.1f}°", factor=1.6)
         _arco(ax, Q, -n_usada, u_out, 0.36, TINTA, f"$\\theta_t$ = {np.degrees(det.theta_t):.1f}°", factor=1.6)
 
@@ -244,7 +245,7 @@ def geometria_refraccion():
         caja = dict(boxstyle="round,pad=0.15", fc=SUPERFICIE, ec="none", alpha=0.9)
         for vector, texto, color in ((t_hat, "$\\hat t$", TINTA_2),
                                      (n_enunciado, "$\\hat n$ del enunciado", TENUE),
-                                     (n_usada, "normal usada\n($\\hat n \\cdot \\hat u < 0$)", NARANJA)):
+                                     (n_usada, "normal usada\n($\\hat n \\cdot \\hat u < 0$)", TINTA)):
             w = _girar(vector)
             p = _girar(Q + (largo_vector + 0.06) * vector)
             ax.text(p[0], p[1], texto, color=color, fontsize=8.5, bbox=caja, zorder=8,
@@ -304,8 +305,8 @@ def cuando_vale_paraxial():
     h_max = 0.9 * min(L.semiapertura for _, L, _ in casos)
     hs = np.geomspace(0.05, h_max, 70)
 
-    fig, (axa, axb) = plt.subplots(1, 2, figsize=(11, 4.8))
-    fig.subplots_adjust(left=0.07, right=0.98, top=0.83, bottom=0.21, wspace=0.27)
+    fig, (axa, axb) = plt.subplots(1, 2, figsize=(11, 5.1))
+    fig.subplots_adjust(left=0.07, right=0.98, top=0.84, bottom=0.25, wspace=0.27)
 
     # (a) apertura
     for (nombre, L, color), (dx, dy, ha, va) in zip(casos, ((8, -6, "left", "top"), (-8, 6, "right", "bottom"))):
@@ -315,10 +316,13 @@ def cuando_vale_paraxial():
         axa.plot(h1, 1.0, "o", color=color, ms=6, zorder=4)
         axa.annotate(f"h = {h1:.2f}", (h1, 1.0), xytext=(dx, dy), textcoords="offset points",
                      ha=ha, va=va, color=TINTA_2, fontsize=8.5)
+        h_fis = apertura_limite(haz(L, y_obj), plano="paraxial")
+        axa.plot(h_fis, float(np.exp(np.interp(np.log(h_fis), np.log(hs), np.log(rel)))), "o", mfc=SUPERFICIE,
+                 mec=color, mew=1.6, ms=7, zorder=5)
     _umbrales(axa, hs[-1])
     _guia_pendiente(axa, 0.06, 0.6, 3e-4, 2, "pendiente 2: ∝ h²")
     axa.set_xlabel("altura h a la que el rayo entra en la lente")
-    axa.set_ylabel("diferencia con la paraxial\n(% de la distancia imagen)")
+    axa.set_ylabel("diferencia con la paraxial (% de la\ndistancia imagen, desde el centro)")
     axa.set_title("(a) Apertura: la diferencia crece como h²", loc="left", fontsize=10)
     axa.legend(frameon=False, loc="upper left", fontsize=8.5, labelcolor=TINTA_2)
 
@@ -342,8 +346,8 @@ def cuando_vale_paraxial():
     _umbrales(axb, ds[-1])
     _guia_pendiente(axb, 0.012, 0.12, 0.012, 1, "pendiente 1: ∝ d")
     axb.set_xlabel("espesor d de la lente (radios R = 10)")
-    axb.set_ylabel("error de la ecuación de lente delgada\n(% de la distancia imagen)")
-    axb.set_title("(b) Espesor: el error de lente delgada crece como d", loc="left", fontsize=10)
+    axb.set_ylabel("error del modelo de lente delgada (% de\nla distancia imagen, desde el centro)")
+    axb.set_title("(b) Espesor: el error del modelo delgado crece como d", loc="left", fontsize=10)
 
     decimal = FuncFormatter(lambda v, _: f"{v:g}")
     for ax in (axa, axb):
@@ -353,8 +357,11 @@ def cuando_vale_paraxial():
     fig.suptitle("¿Cuándo coinciden el trazado vectorial y la aproximación paraxial?",
                  x=0.03, ha="left", fontsize=11.5, color=TINTA, y=0.98)
     fig.text(0.03, 0.03, "Lente biconvexa con R = 10 y n = 1.5; objeto sobre el eje a 30 unidades del centro. "
-             "En (a) el espesor es 2; en (b) se comparan dos predicciones paraxiales.",
-             ha="left", fontsize=8.5, color=TINTA_2)
+             "En (a) el espesor es 2; los círculos vacíos marcan hasta dónde la imagen en el plano paraxial\n"
+             "está limitada por difracción (longitudes en mm, λ = 550 nm). En (b) se compara la paraxial de lente "
+             "gruesa con el modelo delgado (f de lente delgada y distancias\ndesde el centro); con la focal efectiva "
+             "y los planos principales, 1/s + 1/s' = 1/f da la imagen exacta.",
+             ha="left", va="bottom", fontsize=8.5, color=TINTA_2)
     return fig
 
 
@@ -415,13 +422,16 @@ def aberracion_esferica():
     axc.plot(focos.y_rms, 0, "D", color=TINTA, ms=5.5, zorder=6)
     axc.plot([focos.y_circulo] * 2, [-focos.radio_circulo, focos.radio_circulo], color=TINTA, lw=2.2,
              solid_capstyle="butt", zorder=6)
-    for y, x, texto, dy in ((focos.y_paraxial, 0, "foco paraxial", 16),
-                            (focos.y_marginal, 0, "foco del rayo\nmás alejado", 16),
-                            (focos.y_rms, 0, f"mejor foco\n(radio RMS {focos.rms:.2f})", -38),
-                            (focos.y_circulo, focos.radio_circulo,
-                             f"círculo de mínima confusión\n(radio {focos.radio_circulo:.2f})", 12)):
-        axc.annotate(texto, (y, x), xytext=(0, dy), textcoords="offset points", ha="center",
-                     color=TINTA, fontsize=8.5, bbox=caja, zorder=7)
+    flecha = dict(arrowstyle="-", color=TINTA_2, lw=0.8, shrinkA=0, shrinkB=4)
+    for y, x, texto, desplazamiento, con_flecha in (
+            (focos.y_paraxial, 0, "foco paraxial", (0, 16), False),
+            (focos.y_marginal, 0, "foco del rayo\nmás alejado", (0, 16), False),
+            (focos.y_rms, 0, f"mejor foco\n(radio RMS {focos.rms:.2f})", (46, -44), True),
+            (focos.y_circulo, focos.radio_circulo,
+             f"círculo de mínima confusión\n(radio {focos.radio_circulo:.2f})", (0, 12), False)):
+        axc.annotate(texto, (y, x), xytext=desplazamiento, textcoords="offset points", ha="center",
+                     va="top" if desplazamiento[1] < 0 else "bottom", color=TINTA, fontsize=8.5, bbox=caja,
+                     zorder=7, arrowprops=flecha if con_flecha else None)
     axc.set_xlim(focos.y_marginal - 0.7, focos.y_paraxial + 0.9)
     axc.set_ylim(-0.6, 0.6)
     axc.set_aspect("equal")
@@ -457,7 +467,7 @@ def forma_y_asfericas():
                                   bounds=(0.2, 0.95), method="bounded", options={"xatol": 1e-6}).x
                for d in (2.0, 1e-4)}
     axa.plot(qs, curvas[1e-4], color=TENUE, lw=1.3, ls=(0, (4, 3)), label="lente delgada (teoría)", zorder=2)
-    axa.plot(qs, curvas[2.0], color=TINTA_2, lw=2.2, label="nuestra lente, d = 2 (teoría de tercer orden)", zorder=3)
+    axa.plot(qs, curvas[2.0], color=TINTA_2, lw=2.2, label="nuestra lente, d = 2 (tercer orden)", zorder=3)
     q_puntos = np.array([-1.0, -0.5, 0.0, 0.5, optimos[2.0], 1.0])
     medidos = [abs(coeficiente_esferica_trazado(lente_con_forma(q, 10.0, 2.0), None)) for q in q_puntos]
     axa.plot(q_puntos, medidos, "o", color=TINTA, ms=6, label="trazado exacto", zorder=4)
@@ -473,10 +483,11 @@ def forma_y_asfericas():
                      color=TINTA_2, fontsize=8, annotation_clip=False)
     axa.set_ylim(0, tope * 1.08)
     axa.set_xlabel("factor de forma q", labelpad=30)
-    axa.set_ylabel("|Δy| de un rayo que entra a h = 1")
+    axa.set_ylabel("|C₃|: coeficiente de tercer orden\n(Δy ≈ C₃ h²)")
     axa.set_title("(a) Forma de la lente con la misma focal (f = 10, objeto lejano)", loc="left", fontsize=10)
     axa.grid(True, color=REJILLA, lw=0.6)
-    axa.legend(frameon=False, loc="upper right", fontsize=8, labelcolor=TINTA_2)
+    # a la izquierda de las lineas punteadas de los optimos, para que no crucen el texto
+    axa.legend(frameon=False, loc="upper right", bbox_to_anchor=(0.72, 1.0), fontsize=8, labelcolor=TINTA_2)
 
     # (b) forma de las caras: esfera, parabola y la conica que anula el tercer orden
     y_obj = -30.0
@@ -557,8 +568,6 @@ def frente_de_onda_difraccion():
         LAMBDA_VERDE,
         MARECHAL,
         apertura_cruce,
-        apertura_limite,
-        haz,
         mejor_foco_onda,
         psf,
         radio_airy,
@@ -568,7 +577,7 @@ def frente_de_onda_difraccion():
 
     lam, y_obj = LAMBDA_VERDE, -30.0
     k_cero = k_que_anula(lente_biconvexa(10, 10, 2.0, 1.5, 0.0, 0.0), y_obj)
-    casos = (("esfera", 0.0, NARANJA), ("parábola", -1.0, AZUL), ("asférica", k_cero, AQUA))
+    casos = (("esfera", 0.0, NARANJA), ("parábola", -1.0, AZUL), ("cónica k0", k_cero, AQUA))
     haces = [(nombre, haz(lente_biconvexa(10, 10, 2.0, 1.5, k, k), y_obj), color) for nombre, k, color in casos]
     parab = haces[1][1]
     h_tope = min(hz.h_tope for _, hz, _ in haces)
@@ -584,11 +593,11 @@ def frente_de_onda_difraccion():
         for eje in (ax.xaxis, ax.yaxis):
             eje.set_major_formatter(numero)
             eje.set_minor_formatter(NullFormatter())
-        ax.set_xlabel("h_max: radio de la apertura (mm)")
+        ax.set_xlabel("radio de la apertura (mm)")
         ax.grid(True, which="major", color=REJILLA, lw=0.6)
 
     fig = plt.figure(figsize=(11, 8.6))
-    gs = fig.add_gridspec(2, 2, hspace=0.5, wspace=0.27, left=0.07, right=0.97, top=0.9, bottom=0.07)
+    gs = fig.add_gridspec(2, 2, hspace=0.5, wspace=0.27, left=0.07, right=0.97, top=0.9, bottom=0.1)
     axa, axb, axc = fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1]), fig.add_subplot(gs[1, 0])
     sub = gs[1, 1].subgridspec(1, 3, wspace=0.08)
     axd = [fig.add_subplot(sub[0, i]) for i in range(3)]
@@ -603,37 +612,42 @@ def frente_de_onda_difraccion():
     axa.plot(rho, W_par, color=AZUL, lw=1.5, ls=(0, (4, 3)), zorder=3)
     axa.plot(rho, W_mej, color=AZUL, lw=2.2, zorder=3)
     i = 255
-    axa.annotate(f"referencia en la imagen paraxial\nW_rms = {foco.rms_paraxial / lam:.2f} λ", (rho[i], W_par[i]),
+    axa.annotate(f"referencia en la imagen paraxial\nRMS = {foco.rms_paraxial / lam:.2f} λ", (rho[i], W_par[i]),
                  xytext=(-10, 0), textcoords="offset points", ha="right", va="center", color=TINTA_2, fontsize=8.5)
     j = int(np.argmin(W_mej))
-    axa.annotate(f"referencia en el mejor foco\nW_rms = {foco.rms / lam:.2f} λ", (rho[j], W_mej[j]),
+    axa.annotate(f"referencia en el mejor foco\nRMS = {foco.rms / lam:.2f} λ", (rho[j], W_mej[j]),
                  xytext=(0, -8), textcoords="offset points", ha="center", va="top", color=TINTA_2, fontsize=8.5)
     axa.set_xlim(0, 1.0)
     axa.set_ylim(-2.2, 5.0)
-    axa.set_xlabel("ρ = h / h_max (posición en la pupila)")
+    axa.set_xlabel("ρ: posición en la pupila (h dividido por el radio de la apertura)")
     axa.set_ylabel("W (longitudes de onda)")
-    axa.set_title(f"(a) Error del frente de onda: parábola, h_max = {h_a:g} mm", loc="left", fontsize=10)
+    axa.set_title(f"(a) Error del frente de onda: parábola, apertura de radio {h_a:g} mm", loc="left", fontsize=10)
     axa.grid(True, color=REJILLA, lw=0.6)
 
     # (b) W_rms en el mejor foco segun la apertura, con el limite de Marechal
     axb.axhline(MARECHAL, color=TENUE, lw=1.0, ls=(0, (4, 3)), zorder=1)
     axb.annotate("límite de Maréchal: λ/14 (Strehl 0.8)", (hl[0], MARECHAL), xytext=(4, -4),
                  textcoords="offset points", ha="left", va="top", color=TINTA_2, fontsize=8.5)
-    for (nombre, hz, color), (dx, dy, ha, va) in zip(haces, ((-8, 6, "right", "bottom"), (8, -6, "left", "top"),
-                                                            (-8, 6, "right", "bottom"))):
+    # Los nombres van en la leyenda (arriba a la izquierda no hay curvas) y el radio limite
+    # junto a cada punto, en mm como el eje.
+    valores = {"esfera": ((-6, 6), "right", "bottom"), "parábola": ((6, -6), "left", "top"),
+               "cónica k0": ((-6, 6), "right", "bottom")}
+    for nombre, hz, color in haces:
         s = np.array([mejor_foco_onda(hz, h).rms / lam for h in hl])
-        axb.plot(hl, s, color=color, lw=2.2, zorder=3)
+        axb.plot(hl, s, color=color, lw=2.2, zorder=3, label=nombre)
         h_lim = apertura_limite(hz)
         axb.plot(h_lim, MARECHAL, "o", color=color, ms=7, mec=SUPERFICIE, mew=1.5, zorder=4)
-        axb.annotate(f"{nombre}: {h_lim:.2f} mm", (h_lim, MARECHAL), xytext=(dx, dy), textcoords="offset points",
+        desplazamiento, ha, va = valores[nombre]
+        axb.annotate(f"{h_lim:.2f}", (h_lim, MARECHAL), xytext=desplazamiento, textcoords="offset points",
                      ha=ha, va=va, color=TINTA_2, fontsize=8.5)
     axb.annotate("~ h⁴", (0.62, mejor_foco_onda(parab, 0.62).rms / lam), xytext=(6, -10), textcoords="offset points",
                  color=TINTA_2, fontsize=9)
     axb.annotate("~ h⁶", (2.0, mejor_foco_onda(haces[2][1], 2.0).rms / lam), xytext=(6, -10),
                  textcoords="offset points", color=TINTA_2, fontsize=9)
     ejes_log(axb, [1e-4, 1e-3, 1e-2, 0.1, 1, 10])
+    axb.legend(frameon=False, loc="upper left", fontsize=8.5, labelcolor=TINTA_2)
     axb.set_ylim(1e-4, 30)
-    axb.set_ylabel("W_rms en el mejor foco (longitudes de onda)")
+    axb.set_ylabel("error RMS del frente de onda en el\nmejor foco (longitudes de onda)")
     axb.set_title("(b) ¿Hasta qué apertura manda la difracción?", loc="left", fontsize=10)
 
     # (c) mancha geometrica frente al disco de Airy
@@ -646,7 +660,7 @@ def frente_de_onda_difraccion():
         axc.plot(hl, geo, color=color, lw=2.2, zorder=3)
         h_c = apertura_cruce(hz)
         axc.plot(h_c, radio_airy(hz, h_c) * 1e3, "o", color=color, ms=7, mec=SUPERFICIE, mew=1.5, zorder=4)
-        k = min(int(np.searchsorted(geo, 40 if nombre != "asférica" else 0.12)), len(hl) - 1)
+        k = min(int(np.searchsorted(geo, 40 if nombre != "cónica k0" else 0.12)), len(hl) - 1)
         arriba = nombre != "parábola"
         axc.annotate(nombre, (hl[k], geo[k]), xytext=(-6, 3) if arriba else (6, -3), textcoords="offset points",
                      ha="right" if arriba else "left", va="bottom" if arriba else "top", color=TINTA_2, fontsize=8.5)
@@ -661,23 +675,35 @@ def frente_de_onda_difraccion():
     xs = np.linspace(-lado, lado, 241)
     X, Y = np.meshgrid(xs, xs)
     radios = np.linspace(0, lado * np.sqrt(2), 600)
+    # Las tres imagenes en la misma escala: intensidad dividida por el pico de una lente perfecta
+    # de la misma apertura, asi el centro de cada una vale su Strehl.
+    escala = PowerNorm(gamma=0.5, vmin=0, vmax=1)
     for ax, h in zip(axd, (0.8, apertura_limite(parab), 2.0)):
         f = mejor_foco_onda(parab, h)
         perfil = psf(parab, h, f.y_ref, radios * 1e-3)
         imagen = np.interp(np.hypot(X, Y), radios, perfil)
-        ax.imshow(imagen / imagen.max(), extent=(-lado, lado, -lado, lado), origin="lower", cmap=mapa,
-                  norm=PowerNorm(gamma=0.5, vmin=0, vmax=1), interpolation="bilinear")
+        pintura = ax.imshow(imagen, extent=(-lado, lado, -lado, lado), origin="lower", cmap=mapa, norm=escala,
+                            interpolation="bilinear")
         ax.add_patch(plt.Circle((0, 0), radio_airy(parab, h) * 1e3, fill=False, ec=TINTA_2, lw=0.8, ls=(0, (2, 2))))
-        ax.set_title(f"h = {h:.2f} mm\nStrehl {strehl(parab, h, f.y_ref):.2f}", fontsize=9, color=TINTA)
+        ax.set_title(f"radio {h:.2f} mm\nStrehl {strehl(parab, h, f.y_ref):.2f}", fontsize=9, color=TINTA)
         ax.set_xticks([-10, 0, 10])
         ax.set_yticks([])
         ax.tick_params(labelsize=8)
     axd[1].set_xlabel("μm  (círculo: radio de Airy)", fontsize=8.5)
-    axd[0].annotate("(d) Imagen de un punto en el mejor foco (parábola)", (0, 1), xycoords="axes fraction",
-                    xytext=(0, 34), textcoords="offset points", ha="left", va="bottom", fontsize=10, color=TINTA)
+    barra = fig.colorbar(pintura, ax=axd, orientation="horizontal", fraction=0.06, pad=0.2, aspect=30,
+                         ticks=[0, 0.1, 0.25, 0.5, 0.8, 1])
+    barra.ax.tick_params(labelsize=8, color=TENUE)
+    barra.outline.set_visible(False)
+    barra.set_label("intensidad / pico de una lente perfecta de la misma apertura", fontsize=8.5, color=TINTA_2)
+    axd[0].annotate("(d) Imagen de un punto en el plano de menor error RMS (parábola)", (0, 1),
+                    xycoords="axes fraction", xytext=(0, 34), textcoords="offset points", ha="left", va="bottom",
+                    fontsize=10, color=TINTA)
 
-    fig.suptitle("Extra 5 - frente de onda y límite de difracción (λ = 550 nm, longitudes en mm, objeto en y = -30)",
+    fig.suptitle("Frente de onda y límite de difracción (λ = 550 nm, longitudes en mm, objeto en y = -30)",
                  x=0.03, ha="left", fontsize=11.5, color=TINTA, y=0.985)
+    fig.text(0.03, 0.005, f"Cónica k0: caras con k = {k_cero:.2f}, la constante cónica que anula la aberración "
+             "de tercer orden. Los puntos marcan el mayor radio de apertura (mm) con la imagen limitada por difracción.",
+             ha="left", va="bottom", fontsize=8.5, color=TINTA_2)
     return fig
 
 
