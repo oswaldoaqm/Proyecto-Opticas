@@ -8,8 +8,9 @@ Actividades 1 y 2 del enunciado y entregable E2. Las convenciones están en las 
 
 - **Óptica geométrica.** La longitud de onda es mucho menor que la lente, así que la luz se describe con rayos.
 - **Medios homogéneos e isótropos.** Aire ($n = 1$) y vidrio ($n_L$). Dentro de cada medio los rayos son rectas.
-- **Problema plano.** Trabajamos en el plano $xy$, una sección de la lente que contiene el eje óptico. El eje óptico es el eje $y$ y la luz viaja en $+y$; $g(x)$ es la cara de entrada y $f(x)$ la de salida.
+- **Problema plano.** Trabajamos en el plano $xy$, una sección de la lente que contiene el eje óptico. El eje óptico es el eje $y$ y la luz viaja en $+y$; $g(x)$ es la cara de entrada y $f(x)$ la de salida. Solo se trazan rayos de ese plano (meridionales): para un objeto fuera del eje se obtiene la imagen tangencial, y la sagital necesitaría rayos fuera del plano.
 - **Caras suaves.** $f$ y $g$ son derivables, así que en cada punto hay tangente y normal bien definidas.
+- **Borde y diafragma.** La lente termina donde las caras se juntan (el borde tiene espesor cero), salvo que se indique otra semiapertura $a$. El diafragma está en la cara $g$: la altura $h$ a la que entra un rayo es su lugar en la pupila.
 
 ## 2. El rayo como recta paramétrica
 
@@ -26,17 +27,17 @@ Como $\hat{\mathbf u}$ es unitario, $\lambda$ es la distancia recorrida desde $\
 El rayo toca la cara $y = s(x)$ (con $s = g$ o $s = f$) cuando el punto $\mathbf L(\lambda)$ cumple la ecuación de la curva:
 
 ```math
-h(\lambda) \equiv y_0 + \lambda u_y - s(x_0 + \lambda u_x) = 0 .
+F(\lambda) \equiv y_0 + \lambda u_y - s(x_0 + \lambda u_x) = 0 .
 ```
 
-El punto de impacto es $\mathbf Q = \mathbf L(\lambda^\ast)$, donde $\lambda^\ast$ es la **menor raíz positiva** de $h$ que además cae dentro de la lente ($|x_Q| \le a$, la semiapertura). Si no hay raíces positivas, el rayo no toca esa cara.
+El punto de impacto es $\mathbf Q = \mathbf L(\lambda^\ast)$, donde $\lambda^\ast$ es la **menor raíz positiva** de $F$ que además cae dentro de la lente ($|x_Q| \le a$, la semiapertura). Si no hay raíces positivas, el rayo no toca esa cara.
 
 ### Cara parabólica: una ecuación cuadrática
 
-Si $s(x) = y_v + a\,x^2$, con $a = 1/(2R)$ y $R$ el radio de vértice, la condición queda
+Si $s(x) = y_v + p\,x^2$, con $p = 1/(2R)$ y $R$ el radio de vértice, la condición queda
 
 ```math
-A\lambda^2 + B\lambda + C = 0,\qquad A = a\,u_x^2,\qquad B = 2a\,x_0u_x - u_y,\qquad C = a\,x_0^2 + y_v - y_0 .
+A\lambda^2 + B\lambda + C = 0,\qquad A = p\,u_x^2,\qquad B = 2p\,x_0u_x - u_y,\qquad C = p\,x_0^2 + y_v - y_0 .
 ```
 
 - Si $\Delta = B^2 - 4AC < 0$, el rayo no toca la cara.
@@ -60,10 +61,10 @@ De las raíces se toma la menor positiva que cae en la rama del vértice, que es
 
 ### Cara arbitraria: método numérico
 
-Para cualquier $s(x)$ se muestrea $h(\lambda)$ en el tramo donde el rayo cruza la lente, se ubica el primer cambio de signo y se refina con el método de Brent. El método de Newton también serviría, y su derivada dice algo interesante:
+Para cualquier $s(x)$ se muestrea $F(\lambda)$ en el tramo donde el rayo cruza la lente, cortado en el borde ($|x| \le a$) para no perder un impacto muy cerca de él, se ubica el primer cambio de signo y se refina con el método de Brent (la página web usa bisección). El método de Newton también serviría, y su derivada dice algo interesante:
 
 ```math
-h'(\lambda) = u_y - s'(x)\,u_x = \sqrt{1+s'(x)^2}\;\hat{\mathbf u}\cdot\hat{\mathbf n} ,
+F'(\lambda) = u_y - s'(x)\,u_x = \sqrt{1+s'(x)^2}\;\hat{\mathbf u}\cdot\hat{\mathbf n} ,
 ```
 
 así que Newton falla justo cuando el rayo es tangente a la cara ($\hat{\mathbf u} \perp \hat{\mathbf n}$).
@@ -126,7 +127,7 @@ n_1\,(\hat{\mathbf u}\cdot\hat{\mathbf t}) = n_2\,(\hat{\mathbf u}_t\cdot\hat{\m
 
 Para cada cara, en el orden en que la encuentra el rayo:
 
-1. **Impacto.** $\lambda^\ast$ = menor raíz positiva de $h(\lambda)$ dentro de la apertura; $\mathbf Q = \mathbf P_0 + \lambda^\ast\hat{\mathbf u}$.
+1. **Impacto.** $\lambda^\ast$ = menor raíz positiva de $F(\lambda)$ dentro de la apertura; $\mathbf Q = \mathbf P_0 + \lambda^\ast\hat{\mathbf u}$.
 2. **Normal.** $\hat{\mathbf n}(x_Q)$, cambiándole el signo si $\hat{\mathbf n}\cdot\hat{\mathbf u} > 0$.
 3. **Snell.** $\hat{\mathbf u}_t$ con $(n_1, n_2) = (1, n_L)$ al entrar y $(n_L, 1)$ al salir; si la raíz no existe, reflexión total.
 4. **Nuevo rayo.** $\mathbf P_0 \leftarrow \mathbf Q$ y $\hat{\mathbf u} \leftarrow \hat{\mathbf u}_t$.
