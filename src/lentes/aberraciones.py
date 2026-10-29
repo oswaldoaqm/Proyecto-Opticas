@@ -104,6 +104,21 @@ def radio_maximo(ab: Abanico, y_plano: float) -> float:
     return float(np.max(np.abs(ab.x_en(y_plano))))
 
 
+def tramo_de_cruces(cruces) -> tuple[float, float]:
+    """Tramo del eje entre el primer y el ultimo cruce de los rayos, con un margen chico.
+
+    El mejor plano, con cualquiera de los criterios (radio RMS, circulo de minima confusion
+    o frente de onda), esta dentro: antes del primer cruce todos los rayos se acercan al eje
+    y despues del ultimo todos se alejan. No alcanza con el foco paraxial y el del borde: si
+    la aberracion cambia de signo entre el centro y el borde de la pupila (aberracion zonal,
+    como en una lente con caras conicas casi corregida), el mejor plano puede quedar fuera
+    del tramo entre esos dos focos.
+    """
+    lo, hi = float(np.nanmin(cruces)), float(np.nanmax(cruces))
+    margen = 0.05 * (hi - lo) + 1e-12
+    return lo - margen, hi + margen
+
+
 @dataclass(frozen=True)
 class Focos:
     y_paraxial: float     # donde enfocan los rayos cercanos al eje
@@ -121,13 +136,14 @@ class Focos:
 def mejores_focos(lente: Lente, y_objeto: float | None, h_max: float, n: int = 400) -> Focos:
     """Foco paraxial, foco marginal, plano de minimo radio RMS y circulo de minima confusion
     para una pupila circular de radio h_max."""
-    ab = abanico(lente, y_objeto, _pupila(h_max, n))
+    # Los anillos de la pupila dan el radio RMS. El rayo del borde, que va al final, fija el
+    # foco marginal y el circulo de minima confusion (los anillos no llegan hasta h_max).
+    todos = abanico(lente, y_objeto, np.append(_pupila(h_max, n), h_max))
+    anillos = Abanico(*(v[:-1] for v in (todos.alturas, todos.Qx, todos.Qy, todos.ex, todos.ey)))
     y_par = y_paraxial(lente, y_objeto)
-    y_marg = float(abanico(lente, y_objeto, [h_max]).cruces()[0])
-    lo, hi = min(y_par, y_marg), max(y_par, y_marg)
-    margen = 0.1 * (hi - lo)
-    cotas = (lo - margen, hi + margen)
+    y_marg = float(todos.cruces()[-1])
+    cotas = tramo_de_cruces(np.append(todos.cruces(), y_par))
     opciones = {"xatol": 1e-10, "maxiter": 500}
-    r1 = minimize_scalar(lambda y: radio_rms(ab, y), bounds=cotas, method="bounded", options=opciones)
-    r2 = minimize_scalar(lambda y: radio_maximo(ab, y), bounds=cotas, method="bounded", options=opciones)
+    r1 = minimize_scalar(lambda y: radio_rms(anillos, y), bounds=cotas, method="bounded", options=opciones)
+    r2 = minimize_scalar(lambda y: radio_maximo(todos, y), bounds=cotas, method="bounded", options=opciones)
     return Focos(y_par, y_marg, float(r1.x), float(r1.fun), float(r2.x), float(r2.fun))
