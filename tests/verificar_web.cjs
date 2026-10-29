@@ -13,7 +13,7 @@ process.stdin.on("data", (parte) => (entrada += parte));
 process.stdin.on("end", () => {
   const resultados = JSON.parse(entrada).map((caso) => {
     const lente = construir(caso.lente);
-    const tr = L.trazar(lente, caso.P, caso.u);
+    const tr = L.trazar(lente, caso.P, caso.u, 1, 12, 601); // las mismas muestras que la pagina (app.js)
     return {
       estado: tr.estado,
       caras: tr.caras,

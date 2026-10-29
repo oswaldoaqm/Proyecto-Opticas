@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from lentes import Lente, desde_expresion, imagen_paraxial, lente_biconvexa, trazar
+from lentes import Lente, desde_expresion, imagen_paraxial, lente_biconvexa, rayo_hacia, trazar
 
 RAIZ = Path(__file__).resolve().parents[1]
 NODE = shutil.which("node")
@@ -34,6 +34,12 @@ CASOS = [
     {"lente": {"tipo": "expresion", "g": "9 - sqrt(100 - x^2)", "f": "-9 + sqrt(100 - x**2)", "n": 1.5},
      "P": [0, -40], "grados": 4},
     {"lente": {"tipo": "expresion", "g": "-1", "f": "1", "n": 1.5, "semiapertura": 50}, "P": [0, 0], "grados": 60},
+    # el experimento "Formula libre" de la pagina: parabola mas terminos en x^4 y x^6
+    {"lente": {"tipo": "expresion", "g": "-1 + x^2/20 - x^4/6000 + x^6/900000",
+               "f": "1 - x^2/20 + x^4/6000 - x^6/900000", "n": 1.5}, "P": [0, -30], "grados": 7},
+    # rayos dirigidos casi al borde de la cara g (fraccion de la semiapertura)
+    {"lente": {**CONICA, "k1": -1, "k2": -1}, "P": [0, -30], "borde": 1 - 1e-6},
+    {"lente": {**CONICA, "k1": 0, "k2": 0}, "P": [-8, -6], "borde": -(1 - 1e-4)},
 ]
 
 
@@ -43,14 +49,19 @@ def construir(d):
     return Lente(desde_expresion(d["g"], "g"), desde_expresion(d["f"], "f"), d["n"], d.get("semiapertura"))
 
 
+def direccion(caso):
+    if "borde" in caso:
+        lente = construir(caso["lente"])
+        return [float(v) for v in rayo_hacia(lente, caso["P"], caso["borde"] * lente.semiapertura)]
+    a = math.radians(caso["grados"])
+    return [math.sin(a), math.cos(a)]
+
+
 @pytest.fixture(scope="module")
 def resultados_js():
     if NODE is None:
         pytest.fail("en el CI debe haber Node.js para comparar la pagina web con Python")
-    entrada = []
-    for caso in CASOS:
-        a = math.radians(caso["grados"])
-        entrada.append({**caso, "u": [math.sin(a), math.cos(a)]})
+    entrada = [{**caso, "u": direccion(caso)} for caso in CASOS]
     proceso = subprocess.run([NODE, str(RAIZ / "tests" / "verificar_web.cjs")], input=json.dumps(entrada),
                              capture_output=True, text=True, encoding="utf-8", check=True)
     return json.loads(proceso.stdout)
@@ -60,8 +71,7 @@ def resultados_js():
 def test_mismo_recorrido_que_python(i, resultados_js):
     caso, js = CASOS[i], resultados_js[i]
     lente = construir(caso["lente"])
-    a = math.radians(caso["grados"])
-    tr = trazar(lente, caso["P"], [math.sin(a), math.cos(a)])
+    tr = trazar(lente, caso["P"], direccion(caso))
     tol = 1e-9 if caso["lente"]["tipo"] == "conica" else 1e-7  # la web deriva numericamente las formulas
     assert js["estado"] == tr.estado
     assert js["caras"] == tr.caras
