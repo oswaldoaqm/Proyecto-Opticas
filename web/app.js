@@ -70,8 +70,8 @@
     },
     formula: {
       titulo: "Fórmula libre",
-      nota: "Así se especifican las asféricas: una parábola más términos en x^4. Con x^4/6000 se anula la aberración de tercer orden y en el borde queda un resto pequeño. Las fórmulas están en la pestaña Lente.",
-      n: 1.5, P: [0, -30], formula: { g: "-1 + x^2/20 - x^4/6000", f: "1 - x^2/20 + x^4/6000", a: "" }, alfas: [7, -7],
+      nota: "Así se especifican las asféricas: una parábola más términos en x^4 y x^6. Con estos coeficientes la fórmula imita a la cónica que anula el tercer orden. Prueba borrar el término en x^6: el borde pasa a enfocar después que el centro, la lente queda sobrecorregida. Las fórmulas están en la pestaña Lente.",
+      n: 1.5, P: [0, -30], formula: { g: "-1 + x^2/20 - x^4/6000 + x^6/900000", f: "1 - x^2/20 + x^4/6000 - x^6/900000", a: "" }, alfas: [7, -7],
       pestana: "lente",
     },
   };
@@ -85,6 +85,7 @@
     conica: { ...BASE, k1: -1, k2: -1 },
     formula: { g: "", f: "", a: "" },
     formulaPropia: false,
+    lenteCambiada: false, // la lente ya no es la del experimento elegido
     fr: [0.2, -0.2], // rayos 1 y 2: posicion entre los bordes de la lente vistos desde P (-1 a 1)
     abanico: 13,
     vista: "todo",
@@ -171,6 +172,12 @@
     yaMovido = true;
   }
 
+  // Con P en el foco, o a un pelo, la imagen paraxial se va al infinito; mas alla de 1e5 se
+  // trata como infinita, igual que la imagen de los rayos 1 y 2.
+  function paraxialFinita(par) {
+    return Math.abs(par.y) > 1e5 ? { ...par, y: Infinity, x: Infinity, aumento: Infinity } : par;
+  }
+
   function limpio(tr) {
     return tr.estado === "ok" && tr.detalles.length === 2 && !tr.detalles[0].total && !tr.detalles[1].total &&
       tr.direcciones[2][1] > 0;
@@ -239,7 +246,7 @@
     const [[A], [C, D]] = L.matrizSistema(lente);
     const esc = {
       lente, P, amin, amax, principales, abanico, central,
-      paraxial: L.imagenParaxial(lente, P),
+      paraxial: paraxialFinita(L.imagenParaxial(lente, P)),
       focal: L.focalEfectiva(lente),
       F: C === 0 ? NaN : lente.abajo.yv + D / C,
       Fp: C === 0 ? NaN : lente.arriba.yv - A / C,
@@ -824,12 +831,24 @@
     programar();
   }
 
-  function escribirControles() {
+  // El experimento queda marcado mientras la lente sea la suya; mover P o los rayos no cuenta.
+  function marcarChips() {
     for (const b of chips.querySelectorAll("[data-caso]")) {
-      const activo = b.dataset.caso === estado.caso;
-      b.setAttribute("aria-pressed", String(activo));
-      if (activo) mostrarChip(b);
+      b.setAttribute("aria-pressed", String(!estado.lenteCambiada && b.dataset.caso === estado.caso));
     }
+  }
+
+  function lenteEditada() {
+    if (estado.lenteCambiada) return;
+    estado.lenteCambiada = true;
+    marcarChips();
+    $("nota-caso").textContent = `Cambiaste la lente de «${CASOS[estado.caso].titulo}». Restablecer la vuelve a sus valores.`;
+  }
+
+  function escribirControles() {
+    marcarChips();
+    const elegido = chips.querySelector(`[data-caso="${estado.caso}"]`);
+    if (elegido) mostrarChip(elegido);
     poner("n", estado.n, true);
     for (const k of ["R1", "R2", "k1", "k2", "d"]) poner(k, estado.conica[k], true);
     poner("abanico", estado.abanico, true);
@@ -927,6 +946,7 @@
       estado.formulaPropia = false;
     }
     estado.abanico = c.abanico || 13;
+    estado.lenteCambiada = false;
     actualizarLente();
     if (lente && !errorLente) {
       const [amin, amax] = rangoAngular(lente, estado.P);
@@ -1061,9 +1081,9 @@
   // ------------------------------------------------------------------ inicio
   enlazar("xP", 2, (v) => { estado.P[0] = v; marcarMovido(); cambio(); });
   enlazar("yP", 2, (v) => { estado.P[1] = v; marcarMovido(); cambio(); });
-  enlazar("n", 4, (v) => { estado.n = v; cambio(); });
+  enlazar("n", 4, (v) => { estado.n = v; lenteEditada(); cambio(); });
   for (const k of ["R1", "R2", "k1", "k2", "d"]) {
-    enlazar(k, k[0] === "k" ? 3 : 2, (v) => { estado.conica[k] = v; cambio(); });
+    enlazar(k, k[0] === "k" ? 3 : 2, (v) => { estado.conica[k] = v; lenteEditada(); cambio(); });
   }
   enlazar("a1", 2, (v) => { estado.fr[0] = fraccion(radianes(v)); cambio(); });
   enlazar("a2", 2, (v) => { estado.fr[1] = fraccion(radianes(v)); cambio(); });
@@ -1081,6 +1101,7 @@
       }
       estado.modo = r.value;
       mostrarModo();
+      lenteEditada();
       cambio();
     });
   }
@@ -1088,6 +1109,7 @@
     $(c + "-formula").addEventListener("input", (e) => {
       estado.formula[c] = e.target.value;
       estado.formulaPropia = true;
+      lenteEditada();
       cambio();
     });
   }

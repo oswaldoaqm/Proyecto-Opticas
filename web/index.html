@@ -192,7 +192,7 @@
     <li><b>Imagen.</b> Es el cruce de las rectas de dos rayos emergentes. Si se cortan antes de la lente, en sus prolongaciones, la imagen es virtual.</li>
     <li><b>Paraxial.</b> Matrices ABCD de lente gruesa con el radio de vértice de cada cara: lo que predice la óptica de primer orden.</li>
   </ol>
-  <p>Este código se compara de forma automática con el paquete Python del proyecto (<code>tests/test_web.py</code>): mismos puntos de impacto y mismas direcciones, con diferencias menores que 10<sup>-9</sup>.</p>
+  <p>Este código se compara de forma automática con el paquete Python del proyecto (<code>tests/test_web.py</code>): mismos puntos de impacto y mismas direcciones, con diferencias menores que 10<sup>-9</sup> con caras cónicas y que 10<sup>-7</sup> con fórmulas, porque la página deriva las fórmulas con diferencias finitas.</p>
   <p>Límites: rayos en el plano del dibujo, luz de un solo color y caras que se pueden escribir como y = f(x). Las longitudes están en unidades arbitrarias; puedes leerlas como milímetros. El fondo de la página es la cáustica de esta misma lente con caras esféricas, calculada con el mismo código.</p>
 </section>
 </main>
