@@ -1,6 +1,6 @@
 # Verifica en cada push y pull request que el proyecto se reproduce desde cero
 # en Linux y en Windows: instala el entorno fijado, corre las pruebas de la
-# fisica, regenera todas las figuras y ejecuta los notebooks.
+# fisica, regenera todas las figuras (tambien las del poster) y ejecuta los notebooks.
 name: CI
 
 on:
@@ -43,6 +43,11 @@ jobs:
 
       - name: Regenerar todas las figuras
         run: python scripts/generar_figuras.py
+
+      - name: Regenerar las figuras del poster
+        # -W error::UserWarning: falla si a la fuente le falta un caracter (en Windows,
+        # Arial no tiene el subindice de k0 y saldria un recuadro en la figura).
+        run: python -W error::UserWarning poster/generar_poster.py --figuras
 
       - name: Ejecutar los notebooks de principio a fin
         # Ninguna celda tarda mas de unos segundos; el limite de 2 minutos evita esperas sin fin.
